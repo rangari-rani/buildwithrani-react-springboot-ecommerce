@@ -1,7 +1,7 @@
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { usePasswordToggle } from "../../hooks/usePasswordToggle";
+import { usePasswordToggle } from "../hooks/usePasswordToggle";
 import { useState } from "react";
-import { signup } from "../../services/authApi";
+import { signup } from "../services/authApi";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -37,11 +37,11 @@ export default function SignupForm() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("email", userEmail);
-toast.success("Signup successful 🎉");
+      toast.success("Signup successful 🎉");
       navigate("/");
     } catch {
-    
-        toast.error("Something went wrong. Please try again.");
+
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

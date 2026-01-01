@@ -1,7 +1,8 @@
 import { Routes, Route, Link } from "react-router-dom";
-import LoginPage from "./pages/auth/login";
-import SignupPage from "./pages/auth/signup";
-import Footer from "./components/Footer";
+
+import Footer from "./shared/Footer";
+import SignupPage from "./auth/pages/signup";
+import LoginPage from "./auth/pages/login";
 
 export default function App() {
   return (
@@ -52,10 +53,10 @@ export default function App() {
           }
         />
       </Routes>
-  <main className="grow">
+      <main className="grow">
         {/* your routes/components */}
       </main>
-      <Footer/>
+      <Footer />
     </div>
 
   );
