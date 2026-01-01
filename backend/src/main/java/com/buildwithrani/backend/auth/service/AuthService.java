@@ -1,11 +1,11 @@
-package com.example.backend.auth.service;
+package com.buildwithrani.backend.auth.service;
 
-import com.example.backend.auth.dto.AuthResponse;
-import com.example.backend.auth.dto.LoginRequest;
-import com.example.backend.auth.dto.SignupRequest;
-import com.example.backend.auth.model.User;
-import com.example.backend.auth.repository.UserRepository;
-import com.example.backend.auth.security.JwtUtil;
+import com.buildwithrani.backend.auth.dto.AuthResponse;
+import com.buildwithrani.backend.auth.dto.LoginRequest;
+import com.buildwithrani.backend.auth.dto.SignupRequest;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.auth.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

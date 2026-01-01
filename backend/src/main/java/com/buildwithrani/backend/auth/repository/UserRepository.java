@@ -1,6 +1,6 @@
-package com.example.backend.auth.repository;
+package com.buildwithrani.backend.auth.repository;
 
-import com.example.backend.auth.model.User;
+import com.buildwithrani.backend.auth.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

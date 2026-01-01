@@ -1,9 +1,9 @@
-package com.example.backend.auth.controller;
+package com.buildwithrani.backend.auth.controller;
 
-import com.example.backend.auth.dto.AuthResponse;
-import com.example.backend.auth.dto.LoginRequest;
-import com.example.backend.auth.dto.SignupRequest;
-import com.example.backend.auth.service.AuthService;
+import com.buildwithrani.backend.auth.dto.AuthResponse;
+import com.buildwithrani.backend.auth.dto.LoginRequest;
+import com.buildwithrani.backend.auth.dto.SignupRequest;
+import com.buildwithrani.backend.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 

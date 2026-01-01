@@ -1,4 +1,4 @@
-package com.example.backend.auth.model;
+package com.buildwithrani.backend.auth.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.example.backend.auth.dto;
+package com.buildwithrani.backend.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -6,7 +6,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginRequest {
+public class SignupRequest {
+
+    @NotBlank(message = "Full name is required")
+    private String fullName;
 
     @NotBlank(message = "Email is required")
     private String email;

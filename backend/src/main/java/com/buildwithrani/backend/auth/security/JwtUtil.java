@@ -1,4 +1,4 @@
-package com.example.backend.auth.security;
+package com.buildwithrani.backend.auth.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

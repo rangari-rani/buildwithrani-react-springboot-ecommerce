@@ -1,4 +1,4 @@
-package com.example.backend.auth.dto;
+package com.buildwithrani.backend.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
