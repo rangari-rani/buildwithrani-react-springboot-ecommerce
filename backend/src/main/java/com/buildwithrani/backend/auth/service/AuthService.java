@@ -24,15 +24,13 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-
-
     public AuthResponse signup(SignupRequest request) {
 
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
 
-        // 🔐 HASH PASSWORD
+        // HASH PASSWORD
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
