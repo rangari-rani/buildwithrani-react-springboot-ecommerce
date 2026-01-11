@@ -1,5 +1,6 @@
 import React from "react";
 import type { Product } from "../../services/productsData";
+import RatingStars from "../../../shared/RatingStars";
 
 interface ProductInfoProps {
   product: Product;
@@ -15,6 +16,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       <h1 className="text-2xl font-bold text-gray-900 mb-3">
         {name}
       </h1>
+      {product.averageRating !== undefined && (
+        <div className="flex items-center gap-2 mb-3">
+          <RatingStars rating={product.averageRating} />
+          <span className="text-sm text-gray-500">
+            {product.averageRating.toFixed(1)} rating
+          </span>
+        </div>
+      )}
 
       {/* Price */}
       <p className="text-2xl font-semibold text-green-700 mb-4">

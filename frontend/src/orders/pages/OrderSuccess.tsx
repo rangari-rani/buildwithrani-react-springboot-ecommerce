@@ -23,36 +23,58 @@ const OrderSuccess: React.FC = () => {
       </p>
 
       {/* Actions */}
-      <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link
-          to="/products"
-          className="
-            inline-flex items-center justify-center
-            px-6 py-3
-            bg-green-600
-            text-white
-            font-medium
-            rounded-lg
-            hover:bg-green-700
-            transition
-          "
-        >
-          Continue Shopping
-        </Link>
+    <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
 
-        <Link
-          to="/"
-          className="
-            text-sm
-            text-gray-500
-            hover:text-gray-700
-            underline-offset-2
-            hover:underline
-          "
-        >
-          Back to Home
-        </Link>
-      </div>
+  {/* Primary */}
+  <Link
+    to="/products"
+    className="
+      inline-flex items-center justify-center
+      px-6 py-3
+      bg-green-600
+      text-white
+      font-medium
+      rounded-lg
+      hover:bg-green-700
+      transition
+    "
+  >
+    Continue Shopping
+  </Link>
+
+  {/* Secondary */}
+  <Link
+    to="/orders"
+    className="
+      inline-flex items-center justify-center
+      px-6 py-3
+      border border-gray-300
+      text-gray-700
+      font-medium
+      rounded-lg
+      hover:bg-gray-50
+      transition
+    "
+  >
+    View Orders
+  </Link>
+
+  {/* Tertiary */}
+  <Link
+    to="/"
+    className="
+      text-sm
+      text-gray-500
+      hover:text-gray-700
+      underline-offset-2
+      hover:underline
+    "
+  >
+    Back to Home
+  </Link>
+
+</div>
+
 
     </div>
   );

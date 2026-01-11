@@ -3,17 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import ProductForm, {
   type ProductFormData,
 } from "../components/ProductForm";
+import { createProduct } from "../services/adminProductApi";
 
 const AddProductPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (data: ProductFormData) => {
-    // UI-first: no API yet
-    console.log("Create product", data);
+const handleSubmit = async (data: ProductFormData) => {
+  try {
+    await createProduct({
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      discountPercentage: data.discountPercentage,
+      isFeatured: data.isFeatured,
+    });
 
-    // After successful submit → go back to admin list
     navigate("/admin/products");
-  };
+  } catch (error) {
+    console.error("Failed to create product", error);
+    alert("Failed to create product");
+  }
+};
 
   const handleCancel = () => {
     navigate("/admin/products");
@@ -23,11 +33,11 @@ const AddProductPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-0">
       <Link
         to="/admin/products"
-        className="md:hidden text-green-600 font-medium  cursor-pointer "
+        className="md:hidden text-green-600 font-medium cursor-pointer"
       >
         ← Back to products
       </Link>
-      {/* Page Header */}
+
       <div className="mb-8 mt-4">
         <h1 className="text-2xl text-center font-bold text-gray-900">
           Add Product
@@ -37,16 +47,13 @@ const AddProductPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Centered Form */}
       <div className="flex justify-center">
         <ProductForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
       </div>
-
     </div>
-
   );
 };
 

@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ProductsGrid from "../components/list/ProductsGrid";
-import { products } from "../services/productsData";
+import { fetchProducts } from "../services/productsApi";
+import type { Product } from "../services/productsData";
 
 const ProductsList: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-500">
+        Loading products...
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-20">
 

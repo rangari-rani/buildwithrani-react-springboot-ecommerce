@@ -14,36 +14,40 @@ import PublicLayout from "./shared/PublicLayout";
 import ScrollToTop from "./shared/ScrollToTop";
 import CartPage from "./cart/pages/CartPage";
 import OrderSuccess from "./orders/pages/OrderSuccess";
+import OrdersList from "./orders/pages/OrdersList";
+import OrderDetail from "./orders/pages/OrderDetail";
 
 export default function App() {
   return (
 
     <div className="min-h-screen flex flex-col">
-       <ScrollToTop />
-     <Routes>
+      <ScrollToTop />
+      <Routes>
 
-      {/* Public layout */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/products" element={<ProductsList />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
+        {/* Public layout */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/products" element={<ProductsList />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/orders" element={<OrdersList />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
 
-      </Route>
+        </Route>
 
-      {/* Admin layout (NO navbar) */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route path="products" element={<AdminProductsPage />} />
-        <Route path="products/new" element={<AddProductPage />} />
-        <Route path="products/:id/edit" element={<EditProductPage />} />
-      </Route>
+        {/* Admin layout (NO navbar) */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="products" element={<AdminProductsPage />} />
+          <Route path="products/new" element={<AddProductPage />} />
+          <Route path="products/:id/edit" element={<EditProductPage />} />
+        </Route>
 
-    </Routes>
+      </Routes>
 
-    <Footer />
+      <Footer />
     </div>
   );
 }

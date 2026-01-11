@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
-import { products } from "../services/productsData";
+import { fetchProductById } from "../services/productsApi";
+import type { Product } from "../services/productsData";
+
 import ProductGallery from "../components/detail/ProductGallery";
 import ProductInfo from "../components/detail/ProductInfo";
 import AddToCartSection from "../components/detail/AddToCartSection";
@@ -9,9 +11,34 @@ import AddToCartSection from "../components/detail/AddToCartSection";
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
-  const product = products.find(
-    (p) => p.id === Number(id)
-  );
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const loadProduct = async () => {
+      try {
+        const data = await fetchProductById(Number(id));
+        setProduct(data);
+      } catch (error) {
+        console.error("Failed to fetch product", error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-gray-500">
+        Loading product...
+      </div>
+    );
+  }
 
   if (!product) {
     return (

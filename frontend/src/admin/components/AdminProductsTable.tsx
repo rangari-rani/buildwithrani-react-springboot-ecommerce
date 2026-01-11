@@ -4,9 +4,13 @@ import AdminProductRow from "./AdminProductRow";
 
 interface AdminProductsTableProps {
   products: Product[];
+  onRefresh: () => void;
 }
 
-const AdminProductsTable: React.FC<AdminProductsTableProps> = ({ products }) => {
+const AdminProductsTable: React.FC<AdminProductsTableProps> = ({
+  products,
+  onRefresh,
+}) => {
   if (!products || products.length === 0) {
     return (
       <div className="text-center text-gray-500 py-12">
@@ -43,6 +47,7 @@ const AdminProductsTable: React.FC<AdminProductsTableProps> = ({ products }) => 
             <AdminProductRow
               key={product.id}
               product={product}
+              onRefresh={onRefresh}
             />
           ))}
         </tbody>
