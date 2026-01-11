@@ -3,6 +3,7 @@ package com.buildwithrani.backend.auth.service;
 import com.buildwithrani.backend.auth.dto.AuthResponse;
 import com.buildwithrani.backend.auth.dto.LoginRequest;
 import com.buildwithrani.backend.auth.dto.SignupRequest;
+import com.buildwithrani.backend.auth.model.Role;
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.auth.repository.UserRepository;
 import com.buildwithrani.backend.auth.security.JwtUtil;
@@ -30,11 +31,22 @@ public class AuthService {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
 
-        // HASH PASSWORD
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        // DEFAULT ROLE = USER
+        Role role = Role.USER;
+        if (request.getRole() != null) {
+            role = Role.valueOf(request.getRole().toUpperCase());
+        }
+        user.setRole(role);
+
         userRepository.save(user);
-        String token = jwtUtil.generateToken(user.getEmail());
+
+        String token = jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole().name()
+        );
+
         return new AuthResponse(
                 true,
                 "Signup successful",
@@ -42,6 +54,7 @@ public class AuthService {
                 token
         );
     }
+
 
 
     public AuthResponse login(LoginRequest request) {
@@ -53,7 +66,7 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
         return new AuthResponse(
                 true,

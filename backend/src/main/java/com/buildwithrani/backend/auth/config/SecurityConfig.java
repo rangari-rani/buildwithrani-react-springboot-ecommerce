@@ -11,11 +11,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.buildwithrani.backend.auth.security.JwtAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,17 +43,29 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
 
+
                 // 🔓 Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Allow preflight requests
+                        // Allow preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Public auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Everything else requires authentication
+                        // ✅ Public product read APIs
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
+                        // 🔒 Admin APIs
+                        .requestMatchers("/api/admin/**").authenticated()
+
+                        // Everything else
                         .anyRequest().authenticated()
                 );
+
+        http.addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         return http.build();
     }

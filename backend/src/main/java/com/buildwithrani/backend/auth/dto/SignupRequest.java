@@ -16,4 +16,7 @@ public class SignupRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    // USER or ADMIN
+    private String role;
 }
