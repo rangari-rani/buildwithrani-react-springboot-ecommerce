@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminProductsTable from "../components/AdminProductsTable";
-import axiosInstance from "../../api/axiosInstance";
 import type { Product } from "../../products/services/productsData";
+import { fetchAdminProducts } from "../services/adminProductApi";
 
 const AdminProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -10,8 +10,8 @@ const AdminProductsPage: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axiosInstance.get("/products");
-      setProducts(response.data);
+      const data = await fetchAdminProducts();
+      setProducts(data);
     } catch (error) {
       console.error("Failed to fetch products", error);
       alert("Failed to load products");

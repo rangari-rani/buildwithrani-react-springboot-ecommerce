@@ -63,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </h3>
         </Link>
 
-        {product.averageRating !== undefined && (
+       {typeof product.averageRating === "number" && (
           <div className="mb-2 flex items-center gap-1">
             <RatingStars rating={product.averageRating} />
             <span className="text-xs text-gray-500">

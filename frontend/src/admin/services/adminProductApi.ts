@@ -32,6 +32,13 @@ export const updateProduct = async (
   await axiosInstance.put(`/admin/products/${productId}`, data);
 };
 
+// FETCH ALL PRODUCTS
+
+export const fetchAdminProducts = async () => {
+  const response = await axiosInstance.get("/admin/products");
+  return response.data;
+};
+
 // UPDATE STATUS
 export const updateProductStatus = async (
   productId: number,

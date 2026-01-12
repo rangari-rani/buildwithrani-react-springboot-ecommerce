@@ -15,7 +15,7 @@ const handleSubmit = async (data: ProductFormData) => {
       description: data.description,
       price: data.price,
       discountPercentage: data.discountPercentage,
-      isFeatured: data.isFeatured,
+      isFeatured: data.featured,
     });
 
     navigate("/admin/products");

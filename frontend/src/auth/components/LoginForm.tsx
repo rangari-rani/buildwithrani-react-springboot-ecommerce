@@ -1,15 +1,17 @@
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { usePasswordToggle } from "../hooks/usePasswordToggle";
 import { useState } from "react";
-import { login } from "../../auth/services/authApi";
+import { loginApi } from "../services/authApi";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,20 +23,24 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await login({ email, password });
-      const { success, message, token, email: userEmail } = response.data;
+      const response = await loginApi({
+        email,
+        password: passwordValue,
+      });
+
+      const { success, message, token, email: userEmail } = response;
 
       if (!success) {
         setError(message);
         return;
       }
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("email", userEmail);
-      toast.success("Login successful 👋");
-      navigate("/");
-    } catch {
+      // ✅ SINGLE SOURCE OF TRUTH
+      login(token, userEmail);
 
+      toast.success("Login successful 👋");
+      navigate("/admin/products");
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -68,8 +74,8 @@ export default function LoginForm() {
           <input
             type={type}
             placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={passwordValue}
+            onChange={(e) => setPasswordValue(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none pr-10"
             required
           />

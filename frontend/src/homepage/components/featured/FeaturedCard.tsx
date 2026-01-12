@@ -9,7 +9,7 @@ interface FeaturedCardProps {
 }
 
 const FeaturedCard: React.FC<FeaturedCardProps> = ({ product }) => {
-  const { id, image, name, price } = product;
+  const { id, imageUrl, name, price } = product;
 const { addToCart } = useCart();
   return (
     <div className="min-w-65 max-w-65 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
@@ -18,7 +18,7 @@ const { addToCart } = useCart();
       <Link to={`/products/${id}`}>
         <div className="relative w-full h-56 overflow-hidden rounded-t-xl bg-gray-50">
           <img
-            src={image}
+            src={imageUrl}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />

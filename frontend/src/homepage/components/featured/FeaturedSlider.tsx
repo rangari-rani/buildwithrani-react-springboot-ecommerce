@@ -10,8 +10,10 @@ const FeaturedSlider: React.FC = () => {
     const loadFeaturedProducts = async () => {
       try {
         const products = await fetchProducts();
+        console.log("RAW PRODUCTS:", products);
+
         const filtered = products.filter(
-          (product) => product.isFeatured
+          (product) => product.featured
         );
         setFeaturedProducts(filtered);
       } catch (error) {
@@ -26,6 +28,8 @@ const FeaturedSlider: React.FC = () => {
     return null; // hide section if no featured products
   }
 
+
+console.log("FEATURED API PRODUCTS:", featuredProducts);
   return (
     <div className="flex gap-4 overflow-x-auto scrollbar-hide py-2 sm:px-12 px-4">
       {featuredProducts.map((product) => (

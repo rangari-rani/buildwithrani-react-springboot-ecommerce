@@ -9,7 +9,7 @@ export interface Product {
 
   imageUrl?: string;
 
-  isFeatured: boolean;
+  featured: boolean;
   status: "ACTIVE" | "INACTIVE";
 
   averageRating?: number;

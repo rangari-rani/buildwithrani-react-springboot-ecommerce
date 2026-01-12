@@ -24,7 +24,7 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
 
   const handleFeaturedToggle = async () => {
     try {
-      await updateFeaturedStatus(product.id, !product.isFeatured);
+      await updateFeaturedStatus(product.id, !product.featured);
       onRefresh();
     } catch (error) {
       console.error("Failed to update featured status", error);
@@ -87,13 +87,13 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
           className={`
             text-xs font-medium px-2 py-0.5 rounded cursor-pointer
             ${
-              product.isFeatured
+              product.featured
                 ? "text-green-700 bg-green-100"
                 : "text-gray-600 bg-gray-100"
             }
           `}
         >
-          {product.isFeatured ? "Yes" : "No"}
+          {product.featured ? "Yes" : "No"}
         </button>
       </td>
 

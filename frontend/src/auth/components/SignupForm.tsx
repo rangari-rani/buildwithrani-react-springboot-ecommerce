@@ -1,12 +1,14 @@
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { usePasswordToggle } from "../hooks/usePasswordToggle";
 import { useState } from "react";
-import { signup } from "../services/authApi";
+import { signupApi } from "../services/authApi";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 export default function SignupForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,25 +24,25 @@ export default function SignupForm() {
     setLoading(true);
 
     try {
-      const response = await signup({
+      const response = await signupApi({
         fullName,
         email,
         password: passwordValue,
       });
 
-      const { success, message, token, email: userEmail } = response.data;
+      const { success, message, token, email: userEmail } = response;
 
       if (!success) {
         setError(message);
         return;
       }
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("email", userEmail);
+      // ✅ SINGLE SOURCE OF TRUTH
+      login(token, userEmail);
+
       toast.success("Signup successful 🎉");
       navigate("/");
     } catch {
-
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

@@ -4,6 +4,7 @@ import { fetchProducts } from "../../../products/services/productsApi";
 import type { Product } from "../../../products/services/productsData";
 import { isNewArrival } from "../../../products/utils/productUtils";
 
+
 const NewArrivalsSlider: React.FC = () => {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
 
@@ -12,10 +13,12 @@ const NewArrivalsSlider: React.FC = () => {
       try {
         const products = await fetchProducts();
 
-        const filtered = products.filter(
+       const filtered = products.filter(
   (product) =>
-    product.createdAt && isNewArrival(product.createdAt)
+    product.createdAt &&
+    isNewArrival(product.createdAt, 14) // 14 days
 );
+
 
 
         setNewArrivals(filtered);
@@ -31,6 +34,7 @@ const NewArrivalsSlider: React.FC = () => {
     return null; // no new arrivals → hide section
   }
 
+  console.log("NEW ARRIVALS API PRODUCTS:", newArrivals);
   return (
     <div className="flex gap-4 overflow-x-auto scrollbar-hide py-2 sm:px-12 px-4">
       {newArrivals.map((product) => (
