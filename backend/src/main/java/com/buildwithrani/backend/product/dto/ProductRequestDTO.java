@@ -19,5 +19,5 @@ public class ProductRequestDTO {
 
     private Integer discountPercentage;
 
-    private boolean isFeatured;
+    private Boolean featured;
 }

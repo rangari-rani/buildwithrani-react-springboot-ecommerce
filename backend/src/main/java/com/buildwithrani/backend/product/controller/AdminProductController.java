@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
@@ -40,6 +42,11 @@ public class AdminProductController {
 
         return ResponseEntity.ok(updated);
     }
+    // -------- GET ALL PRODUCTS (ADMIN) --------
+    @GetMapping
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProducts());
+    }
 
     // -------- UPDATE PRODUCT STATUS --------
     @PatchMapping("/{id}/status")
@@ -55,9 +62,9 @@ public class AdminProductController {
     @PatchMapping("/{id}/featured")
     public ResponseEntity<Void> updateFeaturedStatus(
             @PathVariable Long id,
-            @RequestParam boolean isFeatured
+            @RequestParam boolean featured
     ) {
-        productService.updateFeaturedStatus(id, isFeatured);
+        productService.updateFeaturedStatus(id, featured);
         return ResponseEntity.noContent().build();
     }
 }

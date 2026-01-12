@@ -25,7 +25,7 @@ public class ProductResponseDTO {
 
     private String imageUrl;
 
-    private boolean isFeatured;
+    private boolean featured;
 
     private ProductStatus status;
 

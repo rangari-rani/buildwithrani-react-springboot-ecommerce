@@ -11,6 +11,7 @@ public interface ProductService {
     // -------- ADMIN --------
     ProductResponseDTO createProduct(ProductRequestDTO request);
     ProductResponseDTO updateProduct(Long id, ProductRequestDTO request);
+    List<ProductResponseDTO> getAllProducts();
 
     // -------- USER --------
     List<ProductResponseDTO> getActiveProducts();

@@ -34,7 +34,7 @@ public class Product {
     private String imageUrl;
 
     @Column(nullable = false)
-    private boolean isFeatured;
+    private boolean featured;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

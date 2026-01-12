@@ -26,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .discountPercentage(request.getDiscountPercentage())
-                .isFeatured(request.isFeatured())
+                .featured(request.getFeatured())
                 // imageUrl will be added later (Cloudinary)
                 .build();
 
@@ -45,11 +45,19 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setDiscountPercentage(request.getDiscountPercentage());
-        product.setFeatured(request.isFeatured());
+        product.setFeatured(request.getFeatured());
 
         Product updated = productRepository.save(product);
 
         return mapToResponse(updated);
+    }
+
+    @Override
+    public List<ProductResponseDTO> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     // -------- USER --------
@@ -97,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .discountPercentage(product.getDiscountPercentage())
                 .imageUrl(product.getImageUrl())
-                .isFeatured(product.isFeatured())
+                .featured(product.isFeatured())
                 .status(product.getStatus())
                 .averageRating(product.getAverageRating())
                 .createdAt(product.getCreatedAt())
