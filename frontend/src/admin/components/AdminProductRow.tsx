@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import type { Product } from "../../products/services/productsData";
 import { useNavigate } from "react-router-dom";
@@ -18,15 +18,31 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  // 🔥 LOCAL STATE FOR OPTIMISTIC UI
+  const [isFeatured, setIsFeatured] = useState<boolean>(product.featured);
+
+  // 🔁 SYNC WHEN PARENT DATA CHANGES
+  useEffect(() => {
+    setIsFeatured(product.featured);
+  }, [product.featured]);
+
   const handleEdit = () => {
     navigate(`/admin/products/${product.id}/edit`);
   };
 
+  // ⭐ FEATURED TOGGLE (FIXED)
   const handleFeaturedToggle = async () => {
+    const nextValue = !isFeatured;
+
+    // optimistic update
+    setIsFeatured(nextValue);
+
     try {
-      await updateFeaturedStatus(product.id, !product.featured);
-      onRefresh();
+      await updateFeaturedStatus(product.id, nextValue);
+      onRefresh(); // sync with backend
     } catch (error) {
+      // rollback on failure
+      setIsFeatured(product.featured);
       console.error("Failed to update featured status", error);
       alert("Failed to update featured status");
     }
@@ -68,9 +84,7 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
         <p className="text-sm font-medium text-gray-900 line-clamp-1">
           {product.name}
         </p>
-        <p className="text-xs text-gray-500">
-          {product.status}
-        </p>
+        <p className="text-xs text-gray-500">{product.status}</p>
       </td>
 
       {/* Price */}
@@ -87,13 +101,13 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
           className={`
             text-xs font-medium px-2 py-0.5 rounded cursor-pointer
             ${
-              product.featured
+              isFeatured
                 ? "text-green-700 bg-green-100"
                 : "text-gray-600 bg-gray-100"
             }
           `}
         >
-          {product.featured ? "Yes" : "No"}
+          {isFeatured ? "Yes" : "No"}
         </button>
       </td>
 

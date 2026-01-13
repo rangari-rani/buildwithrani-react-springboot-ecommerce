@@ -18,7 +18,6 @@ const Hero: React.FC<HeroProps> = ({
   return (
     <section className="py-8">
       <div className="mt-14 max-w-350 mx-auto px-6 rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between py-4 md:py-12 bg-linear-to-r from-green-100 via-green-200 to-green-300">
-
         {/* Text Section */}
         <div className="md:w-1/2 w-full text-center md:text-left mb-10 md:mb-0 text-gray-800">
           <span className="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-2">

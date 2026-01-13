@@ -1,40 +1,28 @@
 import React, { useEffect, useState } from "react";
 import NewArrivalCard from "./NewArrivalCard";
-import { fetchProducts } from "../../../products/services/productsApi";
+import { fetchNewArrivals } from "../../../products/services/productsApi";
 import type { Product } from "../../../products/services/productsData";
-import { isNewArrival } from "../../../products/utils/productUtils";
-
 
 const NewArrivalsSlider: React.FC = () => {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
 
-  useEffect(() => {
-    const loadNewArrivals = async () => {
-      try {
-        const products = await fetchProducts();
+useEffect(() => {
+  const loadNewArrivals = async () => {
+    try {
+      const products = await fetchNewArrivals();
+      setNewArrivals(products);
+    } catch (error) {
+      console.error("Failed to load new arrivals", error);
+    }
+  };
 
-       const filtered = products.filter(
-  (product) =>
-    product.createdAt &&
-    isNewArrival(product.createdAt, 14) // 14 days
-);
-
-
-
-        setNewArrivals(filtered);
-      } catch (error) {
-        console.error("Failed to load new arrivals", error);
-      }
-    };
-
-    loadNewArrivals();
-  }, []);
+  loadNewArrivals();
+}, []);
 
   if (newArrivals.length === 0) {
-    return null; // no new arrivals → hide section
+    return null;
   }
 
-  console.log("NEW ARRIVALS API PRODUCTS:", newArrivals);
   return (
     <div className="flex gap-4 overflow-x-auto scrollbar-hide py-2 sm:px-12 px-4">
       {newArrivals.map((product) => (

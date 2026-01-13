@@ -5,32 +5,25 @@ export interface CreateProductPayload {
   description: string;
   price: number;
   discountPercentage?: number;
-  isFeatured: boolean;
+  featured: boolean;
 }
 
 // CREATE PRODUCT
-export const createProduct = async (data: CreateProductPayload) => {
-  const response = await axiosInstance.post(
-    "/admin/products",
-    data
-  );
-  return response.data;
-};
+export const createProduct = (formData: FormData) =>
+  axiosInstance.post("/admin/products", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // UPDATE PRODUCT
+export const updateProduct = (id: number, formData: FormData) =>
+  axiosInstance.put(`/admin/products/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
-export const updateProduct = async (
-  productId: number,
-  data: {
-    name: string;
-    description: string;
-    price: number;
-    discountPercentage?: number;
-    isFeatured: boolean;
-  }
-) => {
-  await axiosInstance.put(`/admin/products/${productId}`, data);
-};
 
 // FETCH ALL PRODUCTS
 
@@ -56,13 +49,13 @@ export const updateProductStatus = async (
 // TOGGLE FEATURED
 export const updateFeaturedStatus = async (
   productId: number,
-  isFeatured: boolean
+  featured: boolean
 ) => {
   await axiosInstance.patch(
     `/admin/products/${productId}/featured`,
     null,
     {
-      params: { isFeatured },
+      params: { featured },
     }
   );
 };

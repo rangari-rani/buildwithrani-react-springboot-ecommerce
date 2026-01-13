@@ -20,3 +20,13 @@ export const fetchProductById = async (
   const response = await axiosInstance.get(`/products/${productId}`);
   return response.data;
 };
+
+export const fetchFeaturedProducts = async () => {
+  const res = await axiosInstance.get("/products/featured");
+  return res.data;
+};
+
+export const fetchNewArrivals = async () => {
+  const res = await axiosInstance.get("/products/new-arrivals");
+  return res.data;
+};

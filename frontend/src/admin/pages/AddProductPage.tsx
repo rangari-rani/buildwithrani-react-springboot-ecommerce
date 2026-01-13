@@ -10,13 +10,26 @@ const AddProductPage: React.FC = () => {
 
 const handleSubmit = async (data: ProductFormData) => {
   try {
-    await createProduct({
-      name: data.name,
-      description: data.description,
-      price: data.price,
-      discountPercentage: data.discountPercentage,
-      isFeatured: data.featured,
-    });
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("description", data.description);
+    formData.append("price", String(data.price));
+
+    if (data.discountPercentage !== undefined) {
+      formData.append(
+        "discountPercentage",
+        String(data.discountPercentage)
+      );
+    }
+
+    formData.append("featured", String(data.featured));
+
+    if (data.image) {
+      formData.append("image", data.image);
+    }
+
+    await createProduct(formData);
 
     navigate("/admin/products");
   } catch (error) {

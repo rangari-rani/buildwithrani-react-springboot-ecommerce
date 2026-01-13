@@ -34,24 +34,39 @@ const EditProductPage: React.FC = () => {
     loadProduct();
   }, [id]);
 
-  const handleSubmit = async (data: ProductFormData) => {
-    if (!product) return;
+const handleSubmit = async (data: ProductFormData) => {
+  if (!product) return;
 
-    try {
-      await updateProduct(product.id, {
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        discountPercentage: data.discountPercentage,
-        isFeatured: data.featured,
-      });
+  try {
+    const formData = new FormData();
 
-      navigate("/admin/products");
-    } catch (error) {
-      console.error("Failed to update product", error);
-      alert("Failed to update product");
+    formData.append("name", data.name);
+    formData.append("description", data.description);
+    formData.append("price", String(data.price));
+
+    if (data.discountPercentage !== undefined) {
+      formData.append(
+        "discountPercentage",
+        String(data.discountPercentage)
+      );
     }
-  };
+
+    formData.append("featured", String(data.featured));
+
+    // ✅ ONLY append image if a new one is selected
+    if (data.image) {
+      formData.append("image", data.image);
+    }
+
+    await updateProduct(product.id, formData);
+
+    navigate("/admin/products");
+  } catch (error) {
+    console.error("Failed to update product", error);
+    alert("Failed to update product");
+  }
+};
+
 
   const handleCancel = () => {
     navigate("/admin/products");

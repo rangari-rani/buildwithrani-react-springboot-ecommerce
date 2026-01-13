@@ -16,15 +16,16 @@ import CartPage from "./cart/pages/CartPage";
 import OrderSuccess from "./orders/pages/OrderSuccess";
 import OrdersList from "./orders/pages/OrdersList";
 import OrderDetail from "./orders/pages/OrderDetail";
+import AdminRoute from "./admin/components/AdminRoute";
+import AdminLoginPage from "./admin/pages/AdminLoginPage";
 
 export default function App() {
   return (
-
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
-      <Routes>
 
-        {/* Public layout */}
+      <Routes>
+        {/* ---------- PUBLIC ---------- */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
@@ -35,16 +36,24 @@ export default function App() {
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/orders" element={<OrdersList />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
-
         </Route>
 
-        {/* Admin layout (NO navbar) */}
-        <Route path="/admin" element={<AdminLayout />}>
+        {/* ---------- ADMIN LOGIN (PUBLIC) ---------- */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+
+        {/* ---------- ADMIN (PROTECTED) ---------- */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="products/new" element={<AddProductPage />} />
           <Route path="products/:id/edit" element={<EditProductPage />} />
         </Route>
-
       </Routes>
 
       <Footer />

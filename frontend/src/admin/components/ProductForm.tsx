@@ -13,6 +13,7 @@ export interface ProductFormData {
   price: number;
   discountPercentage?: number;
   featured: boolean;
+  image?: File | null;
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({
@@ -31,16 +32,28 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [isFeatured, setIsFeatured] = useState<boolean>(
     initialData?.featured ?? false
   );
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(
+    initialData?.imageUrl ?? null
+  );
 
   useEffect(() => {
-  if (!initialData) return;
+    if (!initialData) return;
 
-  setName(initialData.name ?? "");
-  setDescription(initialData.description ?? "");
-  setPrice(initialData.price ?? 0);
-  setDiscountPercentage(initialData.discountPercentage ?? 0);
-  setIsFeatured(initialData.featured ?? false);
-}, [initialData]);
+    setName(initialData.name ?? "");
+    setDescription(initialData.description ?? "");
+    setPrice(initialData.price ?? 0);
+    setDiscountPercentage(initialData.discountPercentage ?? 0);
+    setIsFeatured(initialData.featured ?? false);
+  }, [initialData]);
+
+  useEffect(() => {
+  return () => {
+    if (preview && preview.startsWith("blob:")) {
+      URL.revokeObjectURL(preview);
+    }
+  };
+}, [preview]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +65,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       discountPercentage:
         discountPercentage > 0 ? discountPercentage : undefined,
       featured: isFeatured,
+      image,
     });
   };
 
@@ -92,24 +106,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         {/* Price */}
-      <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Price (₹)
-  </label>
-  <input
-    type="text"
-    inputMode="numeric"
-    pattern="[0-9]*"
-    value={price === 0 ? "" : price}
-    onChange={(e) => {
-      const value = e.target.value.replace(/\D/g, "");
-      setPrice(value ? Number(value) : 0);
-    }}
-    placeholder="e.g. 1299"
-    required
-    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
-  />
-</div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Price (₹)
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={price === 0 ? "" : price}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "");
+              setPrice(value ? Number(value) : 0);
+            }}
+            placeholder="e.g. 1299"
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
+          />
+        </div>
 
 
         {/* Discount */}
@@ -140,6 +154,33 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <span className="text-sm text-gray-700">
             Mark as Featured
           </span>
+        </div>
+        {/* Product Image */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Product Image
+          </label>
+
+          {preview && (
+            <img
+              src={preview}
+              alt="Preview"
+              className="w-32 h-32 object-cover rounded mb-3 border"
+            />
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              setImage(file);
+              setPreview(URL.createObjectURL(file));
+            }}
+            className="block w-full text-sm text-gray-600"
+          />
         </div>
 
         {/* Actions */}

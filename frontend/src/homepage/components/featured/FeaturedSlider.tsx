@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import FeaturedCard from "./FeaturedCard";
-import { fetchProducts } from "../../../products/services/productsApi";
+import { fetchFeaturedProducts } from "../../../products/services/productsApi";
 import type { Product } from "../../../products/services/productsData";
 
 const FeaturedSlider: React.FC = () => {
@@ -9,13 +9,8 @@ const FeaturedSlider: React.FC = () => {
   useEffect(() => {
     const loadFeaturedProducts = async () => {
       try {
-        const products = await fetchProducts();
-        console.log("RAW PRODUCTS:", products);
-
-        const filtered = products.filter(
-          (product) => product.featured
-        );
-        setFeaturedProducts(filtered);
+        const products = await fetchFeaturedProducts();
+        setFeaturedProducts(products);
       } catch (error) {
         console.error("Failed to load featured products", error);
       }
@@ -25,11 +20,9 @@ const FeaturedSlider: React.FC = () => {
   }, []);
 
   if (featuredProducts.length === 0) {
-    return null; // hide section if no featured products
+    return null;
   }
 
-
-console.log("FEATURED API PRODUCTS:", featuredProducts);
   return (
     <div className="flex gap-4 overflow-x-auto scrollbar-hide py-2 sm:px-12 px-4">
       {featuredProducts.map((product) => (

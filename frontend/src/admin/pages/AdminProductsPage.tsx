@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AdminProductsTable from "../components/AdminProductsTable";
 import type { Product } from "../../products/services/productsData";
 import { fetchAdminProducts } from "../services/adminProductApi";
@@ -7,6 +7,7 @@ import { fetchAdminProducts } from "../services/adminProductApi";
 const AdminProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+const location = useLocation();
 
   const fetchProducts = async () => {
     try {
@@ -22,7 +23,7 @@ const AdminProductsPage: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [location.pathname]);
 
   if (loading) {
     return (
