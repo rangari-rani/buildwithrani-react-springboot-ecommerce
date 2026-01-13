@@ -1,12 +1,15 @@
 package com.buildwithrani.backend.product.service;
 
+import com.buildwithrani.backend.common.cloudinary.CloudinaryService;
 import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.product.dto.ProductRequestDTO;
 import com.buildwithrani.backend.product.dto.ProductResponseDTO;
 import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.mapper.ProductMapper;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,28 +19,43 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CloudinaryService cloudinaryService;
+    private final ProductMapper productMapper;
 
     // -------- ADMIN --------
     @Override
-    public ProductResponseDTO createProduct(ProductRequestDTO request) {
+    public ProductResponseDTO createProduct(
+            ProductRequestDTO request,
+            MultipartFile image
+    ) {
+
+        String imageUrl = null;
+
+        if (image != null && !image.isEmpty()) {
+            imageUrl = cloudinaryService.uploadImage(image);
+        }
 
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .discountPercentage(request.getDiscountPercentage())
-                .featured(request.getFeatured())
-                // imageUrl will be added later (Cloudinary)
+                .featured(Boolean.TRUE.equals(request.getFeatured()))
+                .imageUrl(imageUrl)
                 .build();
 
         Product savedProduct = productRepository.save(product);
 
-        return mapToResponse(savedProduct);
+        return productMapper.toResponse(savedProduct);
     }
 
-    @Override
-    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO request) {
 
+    @Override
+    public ProductResponseDTO updateProduct(
+            Long id,
+            ProductRequestDTO request,
+            MultipartFile image
+    ) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -45,18 +63,24 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setDiscountPercentage(request.getDiscountPercentage());
-        product.setFeatured(request.getFeatured());
+        product.setFeatured(Boolean.TRUE.equals(request.getFeatured()));
+
+        //  ONLY update image if a new one is provided
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = cloudinaryService.uploadImage(image);
+            product.setImageUrl(imageUrl);
+        }
 
         Product updated = productRepository.save(product);
-
-        return mapToResponse(updated);
+        return productMapper.toResponse(updated);
     }
+
 
     @Override
     public List<ProductResponseDTO> getAllProducts() {
         return productRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(productMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -66,7 +90,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository
                 .findByStatusOrderByCreatedAtDesc(ProductStatus.ACTIVE)
                 .stream()
-                .map(this::mapToResponse)
+                .map(productMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -75,7 +99,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        return mapToResponse(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -88,27 +112,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void updateFeaturedStatus(Long productId, boolean isFeatured) {
+    public void updateFeaturedStatus(Long productId, boolean featured) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        product.setFeatured(isFeatured);
+        product.setFeatured(featured);
         productRepository.save(product);
     }
-
-    // -------- MAPPING --------
-    private ProductResponseDTO mapToResponse(Product product) {
-        return ProductResponseDTO.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .discountPercentage(product.getDiscountPercentage())
-                .imageUrl(product.getImageUrl())
-                .featured(product.isFeatured())
-                .status(product.getStatus())
-                .averageRating(product.getAverageRating())
-                .createdAt(product.getCreatedAt())
-                .build();
+    @Override
+    public List<ProductResponseDTO> getFeaturedProducts() {
+        return productRepository
+                .findTop5ByFeaturedTrueAndStatusOrderByCreatedAtDesc(
+                        ProductStatus.ACTIVE
+                )
+                .stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
     }
+
+    @Override
+    public List<ProductResponseDTO> getNewArrivals() {
+        return productRepository
+                .findTop5ByStatusOrderByCreatedAtDesc(
+                        ProductStatus.ACTIVE
+                )
+                .stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 }

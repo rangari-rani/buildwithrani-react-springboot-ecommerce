@@ -9,4 +9,15 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status);
+
+    // Featured products (limit 5)
+    List<Product> findTop5ByFeaturedTrueAndStatusOrderByCreatedAtDesc(
+            ProductStatus status
+    );
+
+    // New arrivals (latest 5)
+    List<Product> findTop5ByStatusOrderByCreatedAtDesc(
+            ProductStatus status
+    );
+
 }
