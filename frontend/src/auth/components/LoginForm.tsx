@@ -39,7 +39,7 @@ export default function LoginForm() {
       login(token, userEmail);
 
       toast.success("Login successful 👋");
-      navigate("/admin/products");
+      navigate("/");
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {

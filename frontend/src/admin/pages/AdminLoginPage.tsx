@@ -1,26 +1,40 @@
 import { useState } from "react";
 import { FiHome } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (email === "admin@test.com" && password === "admin123") {
-      localStorage.setItem("isAdmin", "true");
+    try {
+      // 🧹 Clear any old/invalid token before login
+      localStorage.removeItem("token");
+
+      const res = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
+
+      // 🔐 Store JWT (single source of truth)
+      localStorage.setItem("token", res.data.token);
+
       navigate("/admin/products");
-    } else {
-      alert("Invalid demo credentials");
+    } catch (error) {
+      alert("Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 px-4">
-
       {/* 🔙 Back to Home */}
       <div className="py-4">
         <Link
@@ -60,9 +74,13 @@ const AdminLoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            disabled={loading}
+            className="
+              w-full bg-green-600 text-white py-2 rounded
+              hover:bg-green-700 transition disabled:opacity-50
+            "
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
           <p className="text-xs text-center text-gray-400">

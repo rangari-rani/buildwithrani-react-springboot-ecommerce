@@ -1,16 +1,18 @@
 import React from "react";
-import type { CartItemType } from "./CartList";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import type { CartItem as CartItemModel } from "../services/cartService";
 
 interface CartSummaryProps {
-  items: CartItemType[];
+  items: CartItemModel[];
 }
 
 const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
   const navigate = useNavigate();
+  const { clear } = useCart();
+
   const subtotal = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
 
@@ -18,19 +20,16 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
     (sum, item) => sum + item.quantity,
     0
   );
-const { clearCart } = useCart();
 
-const handleCheckout = () => {
-  if (items.length === 0) return;
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
 
-  // Later: call Spring Boot to create order
-  clearCart();
+    await clear();
+    navigate("/order-success");
+  };
 
-  navigate("/order-success");
-};
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5 sticky top-24">
-
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         Order Summary
       </h2>
@@ -80,7 +79,6 @@ const handleCheckout = () => {
           Continue shopping
         </Link>
       </div>
-
     </div>
   );
 };

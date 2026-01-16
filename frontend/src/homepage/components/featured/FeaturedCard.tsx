@@ -10,7 +10,8 @@ interface FeaturedCardProps {
 
 const FeaturedCard: React.FC<FeaturedCardProps> = ({ product }) => {
   const { id, imageUrl, name, price } = product;
-const { addToCart } = useCart();
+const { addItem } = useCart();
+
   return (
     <div className="min-w-65 max-w-65 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
 
@@ -54,7 +55,7 @@ const { addToCart } = useCart();
               hover:bg-green-700
               transition
             "
-           onClick={() => addToCart(product, 1)}
+           onClick={() => addItem(product.id, 1)}
           >
             <FiShoppingCart size={18} />
           </button>

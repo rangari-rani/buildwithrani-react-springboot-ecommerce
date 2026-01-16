@@ -1,11 +1,19 @@
-import type { JSX } from "react";
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { isAdminLoggedIn } from "../utils/adminAuth";
 
-const AdminRoute = ({ children }: { children: JSX.Element }) => {
-  return isAdminLoggedIn()
-    ? children
-    : <Navigate to="/admin/login" replace />;
+
+interface AdminRouteProps {
+  children: ReactNode;
+}
+
+const AdminRoute = ({ children }: AdminRouteProps) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default AdminRoute;

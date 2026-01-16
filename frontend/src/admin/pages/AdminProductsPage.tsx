@@ -1,93 +1,78 @@
-import { useState } from "react";
-import { FiHome } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+ import React, { useEffect, useState } from "react"; 
+import { Link, useLocation } from "react-router-dom";
+import AdminProductsTable from "../components/AdminProductsTable";
+import type { Product } from "../../products/services/productsData";
+import { fetchAdminProducts } from "../services/adminProductApi";
 
-const AdminLoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+const AdminProductsPage: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+const location = useLocation();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const fetchProducts = async () => {
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", {
-        email,
-        password,
-      });
-
-      // 🔐 Store JWT for admin APIs
-      localStorage.setItem("adminToken", res.data.token);
-
-      navigate("/admin/products");
+      const data = await fetchAdminProducts();
+      setProducts(data);
     } catch (error) {
-      alert("Invalid credentials");
+      console.error("Failed to fetch products", error);
+      alert("Failed to load products");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50 px-4">
+  useEffect(() => {
+    fetchProducts();
+  }, [location.pathname]);
 
-      {/* 🔙 Back to Home */}
-      <div className="py-4">
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-10 text-center text-gray-500">
+        Loading products...
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4">
+
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Admin – Products
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Product management
+          </p>
+        </div>
+
         <Link
-          to="/"
-          className="flex items-center gap-2 text-sm font-semibold text-green-700"
+          to="/admin/products/new"
+          className="
+            inline-flex items-center justify-center
+            px-4 py-2
+            bg-green-600
+            text-white
+            text-sm font-medium
+            rounded-lg
+            hover:bg-green-700
+            transition
+          "
         >
-          <FiHome />
-          Back to Home
+          + Add Product
         </Link>
       </div>
 
-      {/* Login Form */}
-      <div className="flex flex-1 items-center justify-center">
-        <form
-          onSubmit={handleLogin}
-          className="bg-white p-6 rounded-lg shadow max-w-sm w-full space-y-4"
-        >
-          <h1 className="text-xl font-semibold text-center">Admin Login</h1>
+      {/* Products Table */}
+      <AdminProductsTable
+        products={products}
+        onRefresh={fetchProducts}
+      />
 
-          <input
-            type="email"
-            placeholder="admin@test.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="admin123"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            required
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="
-              w-full bg-green-600 text-white py-2 rounded
-              hover:bg-green-700 transition disabled:opacity-50
-            "
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-          <p className="text-xs text-center text-gray-400">
-            Demo credentials for portfolio only
-          </p>
-        </form>
-      </div>
     </div>
   );
 };
 
-export default AdminLoginPage;
+export default AdminProductsPage;
+ 

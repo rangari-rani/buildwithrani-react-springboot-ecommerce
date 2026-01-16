@@ -18,7 +18,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     discountPercentage,
   } = product;
 
-  const { addToCart } = useCart();
+const { addItem } = useCart();
+
 
   const hasDiscount =
     discountPercentage !== undefined && discountPercentage > 0;
@@ -99,7 +100,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               transition
               cursor-pointer
             "
-            onClick={() => addToCart(product, 1)}
+            onClick={() => addItem(product.id, 1)}
             title="Add to cart"
           >
             <FiShoppingCart size={16} />

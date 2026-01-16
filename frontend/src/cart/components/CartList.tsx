@@ -1,14 +1,9 @@
 import React from "react";
 import CartItem from "./CartItem";
-import type { Product } from "../../products/services/productsData";
-
-export interface CartItemType {
-  product: Product;
-  quantity: number;
-}
+import type { CartItem as CartItemModel } from "../services/cartService";
 
 interface CartListProps {
-  items: CartItemType[];
+  items: CartItemModel[];
 }
 
 const CartList: React.FC<CartListProps> = ({ items }) => {
@@ -16,7 +11,7 @@ const CartList: React.FC<CartListProps> = ({ items }) => {
     <div className="space-y-4">
       {items.map((item) => (
         <CartItem
-          key={item.product.id}
+          key={item.productId}
           item={item}
         />
       ))}

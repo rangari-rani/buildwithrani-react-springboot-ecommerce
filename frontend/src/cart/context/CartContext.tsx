@@ -1,77 +1,110 @@
-import React, { createContext, useContext, useState } from "react";
-import type { Product } from "../../products/services/productsData";
-
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeCartItem,
+  clearCart,
+  type CartItem,
+} from "../services/cartService";
+import { useAuth } from "../../auth/context/AuthContext";
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  removeFromCart: (productId: number) => void;
-  clearCart: () => void;
+  loading: boolean;
+  refreshCart: () => Promise<void>;
+  addItem: (productId: number, quantity?: number) => Promise<void>;
+  updateItem: (productId: number, quantity: number) => Promise<void>;
+  removeItem: (productId: number) => Promise<void>;
+  clear: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  // ✅ Add to cart (already correct)
-  const addToCart = (product: Product, quantity: number = 1) => {
-    setItems((prev) => {
-      const existing = prev.find(
-        (item) => item.product.id === product.id
-      );
-
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-
-      return [...prev, { product, quantity }];
-    });
+  /**
+   * Fetch cart from backend (only place where loading=true is needed)
+   */
+  const refreshCart = async () => {
+    try {
+      setLoading(true);
+      const data = await getCart();
+      setItems(data.items);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 🆕 Update quantity
-  const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity < 1) return; // guard (UI rule)
+  /**
+   * Add product to cart (optimistic UX)
+   */
+  const addItem = async (productId: number, quantity = 1) => {
+    const data = await addToCart(productId, quantity);
+    setItems(data.items);
+  };
 
+  /**
+   * Update quantity (optimistic UX)
+   */
+  const updateItem = async (productId: number, quantity: number) => {
+    const data = await updateCartItem(productId, quantity);
+    setItems(data.items);
+  };
+
+  /**
+   * Remove item (optimistic UX)
+   */
+  const removeItem = async (productId: number) => {
+    await removeCartItem(productId);
     setItems((prev) =>
-      prev.map((item) =>
-        item.product.id === productId
-          ? { ...item, quantity }
-          : item
-      )
+      prev.filter((item) => item.productId !== productId)
     );
   };
 
-  // 🆕 Remove item
-  const removeFromCart = (productId: number) => {
-    setItems((prev) =>
-      prev.filter((item) => item.product.id !== productId)
-    );
+  /**
+   * Clear entire cart (destructive → keep loading)
+   */
+  const clear = async () => {
+    try {
+      setLoading(true);
+      await clearCart();
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const clearCart = () => {
-  setItems([]);
-};
+  /**
+   * Load cart only when user is authenticated
+   */
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshCart();
+    } else {
+      setItems([]);
+    }
+  }, [isAuthenticated]);
 
   return (
     <CartContext.Provider
       value={{
         items,
-        addToCart,
-        updateQuantity,
-        removeFromCart,
-        clearCart,
+        loading,
+        refreshCart,
+        addItem,
+        updateItem,
+        removeItem,
+        clear,
       }}
     >
       {children}
@@ -79,10 +112,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+/**
+ * Custom hook for consuming cart context
+ */
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error("useCart must be used within CartProvider");
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };
