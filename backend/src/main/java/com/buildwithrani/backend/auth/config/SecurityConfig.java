@@ -30,23 +30,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔐 Disable CSRF for APIs
+                //  Disable CSRF for APIs
                 .csrf(csrf -> csrf.disable())
 
-                // 🌍 Enable CORS with custom configuration
+                //  Enable CORS with custom configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 🚫 No sessions (JWT-based)
+                //  No sessions (JWT-based)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🚫 Disable default login mechanisms
+                //  Disable default login mechanisms
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
 
 
-                // 🔓 Authorization rules
+                //  Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         // Allow preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -54,13 +54,16 @@ public class SecurityConfig {
                         // Public auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // ✅ Public product read APIs
+                        //  Public product read APIs
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
 
-                        // 🛒 Cart APIs (authenticated users)
+                        //  Cart APIs (authenticated users)
                         .requestMatchers("/api/cart/**").hasRole("USER")
 
-                        // 🔒 Admin APIs
+                        //  Order APIs (authenticated users)
+                        .requestMatchers("/api/orders/**").hasRole("USER")
+
+                        //  Admin APIs
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // Everything else
@@ -76,13 +79,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔑 Password encoder for auth service
+    //  Password encoder for auth service
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🌐 CORS configuration
+    //  CORS configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 

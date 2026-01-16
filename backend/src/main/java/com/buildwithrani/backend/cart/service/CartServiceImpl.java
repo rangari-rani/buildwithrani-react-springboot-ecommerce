@@ -92,6 +92,16 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    @Override
+    public Cart getOrCreateCart(User user) {
+        return cartRepository.findByUser(user)
+                .orElseGet(() -> {
+                    Cart cart = new Cart();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
+                });
+    }
+
     // ----------------- HELPERS -----------------
 
     private Cart getOrCreateCart() {
