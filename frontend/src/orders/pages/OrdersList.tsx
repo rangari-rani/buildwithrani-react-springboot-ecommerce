@@ -1,8 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import OrderCard from "../components/OrderCard";
-import { orders } from "../services/ordersData";
+import { getMyOrders, type OrderResponse } from "../services/ordersData";
 
 const OrdersList: React.FC = () => {
+  const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const data = await getMyOrders();
+        setOrders(data);
+      } catch (error) {
+        console.error("Failed to fetch orders", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-18 text-center">
+        <p className="text-gray-500">Loading your orders...</p>
+      </div>
+    );
+  }
+
   const isEmpty = orders.length === 0;
 
   return (
@@ -28,7 +54,7 @@ const OrdersList: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard key={order.orderId} order={order} />
           ))}
         </div>
       )}

@@ -1,0 +1,24 @@
+import axiosInstance from "../../api/axiosInstance";
+import type { OrderResponse } from "../../orders/services/ordersData";
+
+/**
+ * GET /api/admin/orders
+ */
+export const getAllOrders = async (): Promise<OrderResponse[]> => {
+  const res = await axiosInstance.get<OrderResponse[]>("/admin/orders");
+  return res.data;
+};
+
+/**
+ * PUT /api/admin/orders/{id}/status
+ */
+export const updateOrderStatus = async (
+  orderId: number,
+  orderStatus: string
+): Promise<OrderResponse> => {
+  const res = await axiosInstance.put<OrderResponse>(
+    `/admin/orders/${orderId}/status`,
+    { orderStatus }
+  );
+  return res.data;
+};

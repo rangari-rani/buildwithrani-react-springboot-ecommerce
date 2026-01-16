@@ -1,15 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import type { Order } from "../services/ordersData";
+import type { OrderResponse } from "../services/ordersData";
 import OrderStatusBadge from "./OrderStatusBadge";
 import OrderItemsPreview from "./OrderItemsPreview";
 
 interface OrderCardProps {
-  order: Order;
+  order: OrderResponse;
 }
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
-  const { id, items, totalAmount, status, createdAt } = order;
+  const {
+    orderId,
+    items,
+    totalAmount,
+    orderStatus,
+    createdAt,
+  } = order;
 
   const formattedDate = new Date(createdAt).toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -19,7 +25,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   return (
     <Link
-      to={`/orders/${id}`}
+      to={`/orders/${orderId}`}
       className="
         block
         bg-white
@@ -34,14 +40,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       <div className="flex items-center justify-between gap-4 mb-3">
         <div>
           <p className="text-sm font-semibold text-gray-900">
-            Order #{id}
+            Order #{orderId}
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
             Placed on {formattedDate}
           </p>
         </div>
 
-        <OrderStatusBadge status={status} />
+        <OrderStatusBadge status={orderStatus} />
       </div>
 
       {/* Items preview */}

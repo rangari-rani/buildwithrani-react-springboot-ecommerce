@@ -1,27 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { orders } from "../services/ordersData";
+import { getOrderById, type OrderResponse } from "../services/ordersData";
 import OrderStatusBadge from "../components/OrderStatusBadge";
 
 const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const orderId = Number(id);
 
-  const order = orders.find((o) => o.id === orderId);
+  const [order, setOrder] = useState<OrderResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const data = await getOrderById(orderId);
+        setOrder(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!isNaN(orderId)) fetchOrder();
+    else setLoading(false);
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-500">
+        Loading order details...
+      </div>
+    );
+  }
 
   if (!order) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Order not found
-        </h2>
-        <p className="text-sm text-gray-500 mt-2">
-          The order you are looking for does not exist.
-        </p>
-        <Link
-          to="/orders"
-          className="mt-4 inline-block text-sm text-green-600 hover:underline"
-        >
+      <div className="max-w-5xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-lg font-semibold">Order not found</h2>
+        <Link to="/orders" className="text-green-600 hover:underline mt-3 block">
           Back to Orders
         </Link>
       </div>
@@ -35,73 +50,86 @@ const OrderDetail: React.FC = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-22">
+    <div className="max-w-5xl mx-auto px-4 py-22 space-y-8">
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Order #{order.id}
+            Order #{order.orderId}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             Placed on {formattedDate}
           </p>
         </div>
 
-        <OrderStatusBadge status={order.status} />
+        <OrderStatusBadge status={order.orderStatus} />
       </div>
 
-      {/* Items */}
-      <div className="bg-white border border-gray-200 rounded-lg divide-y">
+      {/* ITEMS */}
+      <div className="bg-white border border-gray-200 rounded-xl divide-y">
         {order.items.map((item) => (
           <div
-            key={item.product.id}
-            className="flex items-center gap-4 p-4"
+            key={item.productId}
+            className="flex items-center gap-4 p-5"
           >
-            <div className="w-16 h-16 bg-gray-50 rounded-md overflow-hidden shrink-0">
-              <img
-                src={item.product.image}
-                alt={item.product.name}
-                className="w-full h-full object-cover"
-              />
+            {/* Product avatar */}
+            <div className="
+              w-14 h-14
+              rounded-lg
+              bg-green-50
+              text-green-700
+              font-bold
+              flex items-center justify-center
+              text-lg
+              shrink-0
+            ">
+              {item.productName.charAt(0)}
             </div>
 
+            {/* Details */}
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                {item.product.name}
+              <p className="font-medium text-gray-900">
+                {item.productName}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Quantity: {item.quantity}
               </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                ₹{item.priceAtPurchase} × {item.quantity}
+              </p>
             </div>
 
-            <p className="text-sm font-semibold text-gray-900">
-              ₹{item.product.price * item.quantity}
-            </p>
+            {/* Price */}
+            <div className="text-right">
+              <p className="font-semibold text-gray-900">
+                ₹{item.totalPrice}
+              </p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Summary */}
-      <div className="mt-6 bg-white border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Total Amount</span>
-          <span className="font-semibold text-gray-900">
-            ₹{order.totalAmount}
-          </span>
+      {/* SUMMARY */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 max-w-md ml-auto">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Items</span>
+          <span>{order.items.length}</span>
+        </div>
+
+        <div className="flex justify-between text-base font-semibold">
+          <span>Total Amount</span>
+          <span>₹{order.totalAmount}</span>
         </div>
       </div>
 
-      {/* Back */}
-      <div className="mt-6">
-        <Link
-          to="/orders"
-          className="text-sm text-gray-500 hover:text-gray-700 underline-offset-2 hover:underline"
-        >
-          ← Back to Orders
-        </Link>
-      </div>
-
+      {/* BACK */}
+      <Link
+        to="/orders"
+        className="inline-block text-sm text-gray-500 hover:text-gray-700 hover:underline"
+      >
+        ← Back to Orders
+      </Link>
     </div>
   );
 };

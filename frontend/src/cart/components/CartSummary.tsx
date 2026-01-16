@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
 import type { CartItem as CartItemModel } from "../services/cartService";
+import { placeOrder } from "../../orders/services/ordersData";
+import { useCart } from "../context/CartContext";
 
 interface CartSummaryProps {
   items: CartItemModel[];
@@ -9,7 +10,7 @@ interface CartSummaryProps {
 
 const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
   const navigate = useNavigate();
-  const { clear } = useCart();
+  const { refreshCart } = useCart();
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -24,8 +25,22 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
   const handleCheckout = async () => {
     if (items.length === 0) return;
 
-    await clear();
-    navigate("/order-success");
+    try {
+      const order = await placeOrder();
+
+      // ✅ sync frontend cart with backend
+      await refreshCart();
+
+      navigate("/order-success", {
+        state: {
+          orderId: order.orderId,
+          orderStatus: order.orderStatus,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to place order", error);
+      alert("Failed to place order. Please try again.");
+    }
   };
 
   return (
@@ -34,7 +49,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
         Order Summary
       </h2>
 
-      {/* Summary rows */}
       <div className="space-y-3 text-sm text-gray-700">
         <div className="flex justify-between">
           <span>Items ({totalItems})</span>
@@ -52,9 +66,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
         </div>
       </div>
 
-      {/* Checkout CTA */}
       <button
         onClick={handleCheckout}
+        disabled={items.length === 0}
         className="
           w-full
           mt-6
@@ -65,12 +79,13 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
           font-medium
           hover:bg-green-700
           transition
+          disabled:opacity-50
+          disabled:cursor-not-allowed
         "
       >
         Proceed to Checkout
       </button>
 
-      {/* Continue shopping */}
       <div className="mt-4 text-center">
         <Link
           to="/products"

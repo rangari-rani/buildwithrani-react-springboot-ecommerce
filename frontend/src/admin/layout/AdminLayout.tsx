@@ -46,15 +46,26 @@ const AdminLayout = () => {
               <NavLink
                 to="/admin/products"
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive
-                      ? "bg-green-50 text-green-700"
-                      : "text-gray-600 hover:bg-green-50"
+                  `block px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "bg-green-50 text-green-700"
+                    : "text-gray-600 hover:bg-green-50"
                   }`
                 }
               >
                 Products
               </NavLink>
+              <NavLink
+                to="/admin/orders"
+                className={({ isActive }) =>
+                  `block px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "bg-green-50 text-green-700"
+                    : "text-gray-600 hover:bg-green-50"
+                  }`
+                }
+              >
+                Orders
+              </NavLink>
+
             </nav>
           </div>
         </aside>

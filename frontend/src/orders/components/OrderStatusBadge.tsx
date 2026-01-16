@@ -1,16 +1,24 @@
 import React from "react";
 
 interface OrderStatusBadgeProps {
-  status: "PLACED" | "DELIVERED" | "CANCELLED";
+  status: string; // ✅ accept backend string
 }
 
 const statusStyles: Record<
-  OrderStatusBadgeProps["status"],
+  string,
   { label: string; className: string }
 > = {
   PLACED: {
     label: "Placed",
     className: "bg-yellow-100 text-yellow-700",
+  },
+  CONFIRMED: {
+    label: "Confirmed",
+    className: "bg-blue-100 text-blue-700",
+  },
+  SHIPPED: {
+    label: "Shipped",
+    className: "bg-purple-100 text-purple-700",
   },
   DELIVERED: {
     label: "Delivered",
@@ -23,7 +31,11 @@ const statusStyles: Record<
 };
 
 const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({ status }) => {
-  const config = statusStyles[status];
+  const config =
+    statusStyles[status] ?? {
+      label: status,
+      className: "bg-gray-100 text-gray-700",
+    };
 
   return (
     <span

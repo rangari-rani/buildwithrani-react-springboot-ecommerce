@@ -12,38 +12,40 @@ const OrderItemsPreview: React.FC<OrderItemsPreviewProps> = ({ items }) => {
   const remainingCount = items.length - previewItems.length;
 
   return (
-    <div className="flex items-center gap-2 mt-3">
+    <div className="flex items-center gap-2 mt-3 flex-wrap">
 
-      {/* Product images */}
+      {/* Product name chips */}
       {previewItems.map((item) => (
-        <div
-          key={item.product.id}
-          className="w-12 h-12 rounded-md overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
+        <span
+          key={item.productId}
+          className="
+            px-3 py-1
+            rounded-full
+            bg-gray-100
+            text-xs
+            text-gray-700
+            font-medium
+          "
         >
-          <img
-            src={item.product.image}
-            alt={item.product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+          {item.productName}
+        </span>
       ))}
 
       {/* +X more */}
       {remainingCount > 0 && (
-        <div className="
-          w-12 h-12
-          flex items-center justify-center
-          rounded-md
-          border border-gray-200
-          bg-gray-100
-          text-xs
-          font-medium
-          text-gray-600
-        ">
-          +{remainingCount}
-        </div>
+        <span
+          className="
+            px-3 py-1
+            rounded-full
+            bg-gray-200
+            text-xs
+            font-medium
+            text-gray-600
+          "
+        >
+          +{remainingCount} more
+        </span>
       )}
-
     </div>
   );
 };

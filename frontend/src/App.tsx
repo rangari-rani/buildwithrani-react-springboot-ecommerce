@@ -18,6 +18,7 @@ import OrdersList from "./orders/pages/OrdersList";
 import OrderDetail from "./orders/pages/OrderDetail";
 import AdminRoute from "./admin/components/AdminRoute";
 import AdminLoginPage from "./admin/pages/AdminLoginPage";
+import AdminOrdersPage from "./admin/pages/AdminOrdersPage";
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="products/new" element={<AddProductPage />} />
           <Route path="products/:id/edit" element={<EditProductPage />} />
+          <Route path="/admin/orders" element={<AdminOrdersPage />} />
         </Route>
       </Routes>
 
