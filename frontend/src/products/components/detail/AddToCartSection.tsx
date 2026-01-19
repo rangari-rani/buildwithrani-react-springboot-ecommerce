@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
 import type { Product } from "../../services/productsData";
 import { useCart } from "../../../cart/context/CartContext";
+import { useAuth } from "../../../auth/context/AuthContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface AddToCartSectionProps {
   product: Product;
@@ -10,6 +13,8 @@ interface AddToCartSectionProps {
 const AddToCartSection: React.FC<AddToCartSectionProps> = ({ product }) => {
   const [quantity, setQuantity] = useState<number>(1);
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
+const navigate = useNavigate();
 
   const increment = () =>
     setQuantity((q) => Math.min(q + 1, 10));
@@ -18,13 +23,24 @@ const AddToCartSection: React.FC<AddToCartSectionProps> = ({ product }) => {
     setQuantity((q) => (q > 1 ? q - 1 : 1));
 
   const isOutOfStock = product.status !== "ACTIVE";
-
   const handleAddToCart = async () => {
     if (isOutOfStock) return;
 
+    // Not logged in → show toast
+    if (!isAuthenticated) {
+  toast.error("Please login to add items to cart");
+  navigate("/login", {
+    state: { redirectTo: "/cart" },
+  });
+  return;
+}
+
+
     await addItem(product.id, quantity);
+    toast.success("Item added to cart");
     setQuantity(1);
   };
+
 
   return (
     <div className="w-full mt-8 border-t border-gray-100 pt-6">

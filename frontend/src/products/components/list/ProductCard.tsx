@@ -4,12 +4,18 @@ import { Link } from "react-router-dom";
 import type { Product } from "../../services/productsData";
 import { useCart } from "../../../cart/context/CartContext";
 import RatingStars from "../../../shared/RatingStars";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { isAuthenticated } = useAuth();
+const navigate = useNavigate();
+
   const {
     id,
     imageUrl,
@@ -20,13 +26,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
 const { addItem } = useCart();
 
-
   const hasDiscount =
     discountPercentage !== undefined && discountPercentage > 0;
 
   const discountedPrice = hasDiscount
     ? Math.round(price - (price * discountPercentage) / 100)
     : price;
+
+    const handleQuickAdd = async () => {
+  if (!isAuthenticated) {
+    toast.error("Please login to add items to cart");
+    navigate("/login", {
+      state: { redirectTo: "/cart" },
+    });
+    return;
+  }
+
+  await addItem(product.id, 1);
+  toast.success("Item added to cart");
+};
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 hover:shadow-sm transition">
@@ -100,7 +118,7 @@ const { addItem } = useCart();
               transition
               cursor-pointer
             "
-            onClick={() => addItem(product.id, 1)}
+            onClick={handleQuickAdd}
             title="Add to cart"
           >
             <FiShoppingCart size={16} />

@@ -3,6 +3,9 @@ import { FiShoppingCart } from "react-icons/fi";
 import type { Product } from "../../../products/services/productsData";
 import { Link } from "react-router-dom";
 import { useCart } from "../../../cart/context/CartContext";
+import { useAuth } from "../../../auth/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 interface NewArrivalCardProps {
   product: Product;
@@ -10,6 +13,21 @@ interface NewArrivalCardProps {
 const NewArrivalCard: React.FC<NewArrivalCardProps> = ({ product }) => {
   const { id, imageUrl, name, price } = product;
 const { addItem } = useCart();
+const { isAuthenticated } = useAuth();
+const navigate = useNavigate();
+
+const handleQuickAdd = async () => {
+  if (!isAuthenticated) {
+    toast.error("Please login to add items to cart");
+    navigate("/login", {
+      state: { redirectTo: "/cart" },
+    });
+    return;
+  }
+
+  await addItem(product.id, 1);
+  toast.success("Item added to cart");
+};
 
   return (
     <div className="min-w-65 max-w-65 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
@@ -54,7 +72,7 @@ const { addItem } = useCart();
               hover:bg-gray-100
               transition
             "
-            onClick={() => addItem(product.id, 1)}
+             onClick={handleQuickAdd}
           >
             <FiShoppingCart size={14} />
           </button>

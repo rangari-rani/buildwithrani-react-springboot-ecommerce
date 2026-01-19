@@ -2,7 +2,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { usePasswordToggle } from "../hooks/usePasswordToggle";
 import { useState } from "react";
 import { signupApi } from "../services/authApi";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -15,7 +15,9 @@ export default function SignupForm() {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+const location = useLocation();
+const redirectTo =
+  (location.state as { redirectTo?: string })?.redirectTo || "/";
   const password = usePasswordToggle();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +43,8 @@ export default function SignupForm() {
       login(token, userEmail);
 
       toast.success("Signup successful 🎉");
-      navigate("/");
+      navigate(redirectTo, { replace: true });
+
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {

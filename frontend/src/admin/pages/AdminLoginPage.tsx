@@ -83,9 +83,7 @@ const AdminLoginPage = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
 
-          <p className="text-xs text-center text-gray-400">
-            Demo credentials for portfolio only
-          </p>
+       
         </form>
       </div>
     </div>

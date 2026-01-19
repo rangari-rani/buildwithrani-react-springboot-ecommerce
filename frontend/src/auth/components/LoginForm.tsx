@@ -2,7 +2,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { usePasswordToggle } from "../hooks/usePasswordToggle";
 import { useState } from "react";
 import { loginApi } from "../services/authApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation  } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -14,6 +14,9 @@ export default function LoginForm() {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+const location = useLocation();
+const redirectTo =
+  (location.state as { redirectTo?: string })?.redirectTo || "/";
 
   const { type, visible, toggle } = usePasswordToggle();
 
@@ -35,11 +38,12 @@ export default function LoginForm() {
         return;
       }
 
-      // ✅ SINGLE SOURCE OF TRUTH
+      //  SINGLE SOURCE OF TRUTH
       login(token, userEmail);
 
       toast.success("Login successful 👋");
-      navigate("/");
+      navigate(redirectTo, { replace: true });
+
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {

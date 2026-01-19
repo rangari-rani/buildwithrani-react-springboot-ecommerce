@@ -63,6 +63,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         cartItemRepository.deleteByCart(cart);
+        cart.getItems().clear();
 
         //  MAP TO DTO INSIDE TRANSACTION
         return OrderMapper.toOrderResponse(savedOrder);
