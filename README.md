@@ -1,6 +1,6 @@
-# Wellness Cart — E-commerce User Flow 
+# Wellness Cart — Role-Based E-Commerce System
 
-A React, Spring Boot & MySQL project that demonstrates real-world e-commerce user flows such as product browsing, cart and checkout experience.
+A full-stack React, Spring Boot, and MySQL application demonstrating real-world eCommerce workflows, including product discovery, cart management, and order processing.
 
 Built with a focus on clean UI architecture, reusable components, and scalable state management.
 
@@ -16,12 +16,11 @@ Built with a focus on clean UI architecture, reusable components, and scalable s
 
 ## ✨ Features
 
-- User authentication (signup & login)
-- JWT-based authentication flow
-- Secure password hashing (BCrypt)
-- Frontend–backend integration
-- Global success/error feedback (toasts)
-- Stateless backend configuration
+- Secure authentication with signup, login, and role-based access (user/admin).
+- Product management with featured flags, new arrivals sorting, image uploads, and soft delete (activate/deactivate).
+- Cart system enforcing one active cart per authenticated user with quantity-based item updates.
+- Order workflows with immutable order history and admin-controlled status transitions.
+- Dedicated admin controls for managing products and orders.
 
 ---
 
@@ -87,7 +86,7 @@ npm run dev
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce-api.git
+git clone https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce.git
 cd backend
 ```
 
