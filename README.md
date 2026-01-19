@@ -14,6 +14,17 @@ Built with a focus on clean UI architecture, reusable components, and scalable s
 
 ---
 
+## 📸 Screenshots
+
+![Product](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listproduct.png)
+_Admin Product_
+![Cart Page](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listcart.png)
+_Cart Page_
+![Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listorder.png)
+_Admin Order_
+
+---
+
 ## ✨ Features
 
 - Secure authentication with signup, login, and role-based access (user/admin).
