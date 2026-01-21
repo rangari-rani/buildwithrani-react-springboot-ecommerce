@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.buildwithrani.backend.common.dto.ApiResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -80,21 +81,29 @@ public class AdminProductController {
 
     // -------- UPDATE PRODUCT STATUS --------
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateProductStatus(
+    public ResponseEntity<ApiResponse<Void>> updateProductStatus(
             @PathVariable Long id,
             @RequestParam ProductStatus status
     ) {
         productService.updateProductStatus(id, status);
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Product status updated successfully")
+        );
     }
+
 
     // -------- TOGGLE FEATURED --------
     @PatchMapping("/{id}/featured")
-    public ResponseEntity<Void> updateFeaturedStatus(
+    public ResponseEntity<ApiResponse<Void>> updateFeaturedStatus(
             @PathVariable Long id,
             @RequestParam boolean featured
     ) {
         productService.updateFeaturedStatus(id, featured);
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Product featured status updated successfully")
+        );
     }
+
 }

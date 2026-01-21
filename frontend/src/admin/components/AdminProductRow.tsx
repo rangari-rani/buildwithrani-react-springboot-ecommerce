@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import type { Product } from "../../products/services/productsData";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   updateFeaturedStatus,
   updateProductStatus,
@@ -100,10 +100,9 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
           onClick={handleFeaturedToggle}
           className={`
             text-xs font-medium px-2 py-0.5 rounded cursor-pointer
-            ${
-              isFeatured
-                ? "text-green-700 bg-green-100"
-                : "text-gray-600 bg-gray-100"
+            ${isFeatured
+              ? "text-green-700 bg-green-100"
+              : "text-gray-600 bg-gray-100"
             }
           `}
         >
@@ -123,16 +122,22 @@ const AdminProductRow: React.FC<AdminProductRowProps> = ({
           >
             <FiEdit2 size={16} />
           </button>
+          {/* View Audit Logs */}
+          <Link
+            to={`/admin/audit-logs?entityType=PRODUCT&entityId=${product.id}`}
+            className="text-xs text-green-700 hover:underline font-medium"
+          >
+            Logs
+          </Link>
 
           {/* Activate / Deactivate */}
           <button
             onClick={handleStatusToggle}
             className={`
               text-xs font-medium px-2 py-1 rounded cursor-pointer
-              ${
-                product.status === "ACTIVE"
-                  ? "text-red-600 bg-red-100"
-                  : "text-green-700 bg-green-100"
+              ${product.status === "ACTIVE"
+                ? "text-red-600 bg-red-100"
+                : "text-green-700 bg-green-100"
               }
             `}
           >

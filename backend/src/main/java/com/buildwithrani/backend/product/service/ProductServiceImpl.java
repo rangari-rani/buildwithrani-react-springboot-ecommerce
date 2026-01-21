@@ -10,6 +10,11 @@ import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.auth.security.SecurityUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +26,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
+    private final AuditService auditService;
+    private final UserRepository userRepository;
 
     // -------- ADMIN --------
     @Override
@@ -104,12 +111,50 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProductStatus(Long productId, ProductStatus status) {
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        ProductStatus previousStatus = product.getStatus();
+
+        // no-op protection (optional but clean)
+        if (previousStatus == status) {
+            return;
+        }
+
         product.setStatus(status);
         productRepository.save(product);
+
+        // ---- AUDIT LOGGING ----
+        String action;
+
+        if (previousStatus == ProductStatus.INACTIVE && status == ProductStatus.ACTIVE) {
+            action = "PRODUCT_ACTIVATED";
+        } else if (previousStatus == ProductStatus.ACTIVE && status == ProductStatus.INACTIVE) {
+            action = "PRODUCT_DEACTIVATED";
+        } else {
+            action = "PRODUCT_STATUS_CHANGED_" + previousStatus + "_TO_" + status;
+        }
+
+        String adminEmail = SecurityUtils.getCurrentUserEmail();
+
+        Long adminId = null;
+        if (adminEmail != null) {
+            adminId = userRepository.findByEmail(adminEmail)
+                    .map(User::getId)
+                    .orElse(null);
+        }
+
+        auditService.logAction(
+                adminId,
+                ActorRole.ADMIN,
+                action,
+                "PRODUCT",
+                product.getId()
+        );
+
     }
+
 
     @Override
     public void updateFeaturedStatus(Long productId, boolean featured) {
