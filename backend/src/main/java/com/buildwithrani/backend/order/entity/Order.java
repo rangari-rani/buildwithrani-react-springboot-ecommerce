@@ -4,7 +4,9 @@ import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.order.enums.OrderStatus;
 import com.buildwithrani.backend.order.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,10 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Order {
 
     @Id
@@ -28,7 +27,6 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Total order amount
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
@@ -50,10 +48,64 @@ public class Order {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /* =====================
+       LIFECYCLE MANAGEMENT
+       ===================== */
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.orderStatus = OrderStatus.PLACED;
-        this.paymentStatus = PaymentStatus.PAID; // mocked payment for now
     }
+
+
+    /* =====================
+       DOMAIN METHODS
+       ===================== */
+
+    public void markAsPaid() {
+        if (!orderStatus.canTransitionTo(OrderStatus.PAID)) {
+            throw new InvalidStateException(
+                    "Cannot mark order as PAID from state: " + orderStatus
+            );
+
+        }
+        this.paymentStatus = PaymentStatus.PAID;
+        this.orderStatus = OrderStatus.PAID;
+    }
+
+    public void advanceByAdmin(OrderStatus nextStatus) {
+        if (!orderStatus.canTransitionTo(nextStatus)) {
+            throw new InvalidStateException(
+                    "Invalid order transition from " + orderStatus + " to " + nextStatus
+            );
+        }
+        this.orderStatus = nextStatus;
+    }
+
+    public void cancelByUser() {
+        if (!(orderStatus == OrderStatus.CREATED || orderStatus == OrderStatus.PAID)) {
+            throw new InvalidStateException(
+                    "Order cannot be cancelled in state: " + orderStatus
+            );
+        }
+        this.orderStatus = OrderStatus.CANCELLED;
+    }
+    public static Order create(
+            User user,
+            BigDecimal totalAmount,
+            List<OrderItem> orderItems
+    ) {
+        Order order = new Order();
+        order.user = user;
+        order.totalAmount = totalAmount;
+        order.orderItems = orderItems;
+
+
+        order.orderStatus = OrderStatus.CREATED;
+        order.paymentStatus = PaymentStatus.PENDING;
+
+        return order;
+    }
+
+
 }

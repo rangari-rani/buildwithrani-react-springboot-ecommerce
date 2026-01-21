@@ -1,5 +1,6 @@
 package com.buildwithrani.backend.order.controller;
 
+import com.buildwithrani.backend.common.dto.ApiResponse;
 import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.dto.UpdateOrderStatusRequest;
 import com.buildwithrani.backend.order.entity.Order;
@@ -27,13 +28,18 @@ public class AdminOrderController {
     }
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<OrderResponse> updateOrderStatus(
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable Long orderId,
             @RequestBody UpdateOrderStatusRequest request
     ) {
         return ResponseEntity.ok(
-                orderService.updateOrderStatus(orderId, request.getOrderStatus())
+                ApiResponse.success(
+                        "Order status updated successfully",
+                        orderService.advanceOrderStatus(
+                                orderId,
+                                request.getOrderStatus()
+                        )
+                )
         );
     }
-
 }

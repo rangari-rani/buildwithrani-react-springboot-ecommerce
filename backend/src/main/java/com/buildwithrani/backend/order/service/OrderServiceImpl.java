@@ -2,10 +2,14 @@ package com.buildwithrani.backend.order.service;
 
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.auth.security.SecurityUtils;
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
 import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.repository.CartItemRepository;
 import com.buildwithrani.backend.cart.service.CartService;
+import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.entity.Order;
 import com.buildwithrani.backend.order.entity.OrderItem;
 import com.buildwithrani.backend.order.enums.OrderStatus;
@@ -14,11 +18,9 @@ import com.buildwithrani.backend.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.buildwithrani.backend.order.dto.OrderResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +31,11 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemRepository cartItemRepository;
     private final CartService cartService;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
-    // ================= USER METHODS =================
+    /* =====================
+       USER ACTIONS
+       ===================== */
 
     @Override
     public OrderResponse placeOrder(String email) {
@@ -49,26 +54,25 @@ public class OrderServiceImpl implements OrderService {
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Order order = Order.builder()
-                .user(user)
-                .totalAmount(totalAmount)
-                .build();
-
         List<OrderItem> orderItems = cart.getItems().stream()
-                .map(cartItem -> buildOrderItem(cartItem, order))
+                .map(cartItem -> buildOrderItem(cartItem, null)) // temporary
                 .toList();
 
-        order.setOrderItems(orderItems);
+        Order order = Order.create(user, totalAmount, orderItems);
+
+        // fix back-reference
+        orderItems.forEach(item -> item.setOrder(order));
+
+        // Mock payment success → explicit transition
+        order.markAsPaid();
 
         Order savedOrder = orderRepository.save(order);
 
         cartItemRepository.deleteByCart(cart);
         cart.getItems().clear();
 
-        //  MAP TO DTO INSIDE TRANSACTION
         return OrderMapper.toOrderResponse(savedOrder);
     }
-
 
     @Override
     public List<OrderResponse> getMyOrders(String email) {
@@ -81,9 +85,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderMapper::toOrderResponse)
                 .toList();
     }
-
-
-
 
     @Override
     public OrderResponse getOrderById(Long orderId, String email) {
@@ -101,9 +102,37 @@ public class OrderServiceImpl implements OrderService {
         return OrderMapper.toOrderResponse(order);
     }
 
+    @Override
+    public OrderResponse cancelOrder(Long orderId, String email) {
 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // ================= ADMIN METHODS =================
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied");
+        }
+
+        OrderStatus previousStatus = order.getOrderStatus();
+
+        order.cancelByUser();
+
+        auditService.logAction(
+                user.getId(),
+                ActorRole.USER,
+                "ORDER_CANCELLED_FROM_" + previousStatus,
+                "ORDER",
+                order.getId()
+        );
+
+        return OrderMapper.toOrderResponse(order);
+    }
+
+    /* =====================
+       ADMIN ACTIONS
+       ===================== */
 
     @Override
     public List<OrderResponse> getAllOrders() {
@@ -113,23 +142,42 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-
-
     @Override
-    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+    public OrderResponse advanceOrderStatus(
+            Long orderId,
+            OrderStatus nextStatus
+    ) {
 
-        Order order = orderRepository.findByIdWithItems(orderId)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setOrderStatus(status);
+        OrderStatus previousStatus = order.getOrderStatus();
 
-        Order savedOrder = orderRepository.save(order);
+        order.advanceByAdmin(nextStatus);
 
-        return OrderMapper.toOrderResponse(savedOrder);
+        String adminEmail = SecurityUtils.getCurrentUserEmail();
+
+        Long adminId = null;
+        if (adminEmail != null) {
+            adminId = userRepository.findByEmail(adminEmail)
+                    .map(User::getId)
+                    .orElse(null);
+        }
+
+        auditService.logAction(
+                adminId,
+                ActorRole.ADMIN,
+                "ORDER_STATUS_CHANGED_" + previousStatus + "_TO_" + nextStatus,
+                "ORDER",
+                order.getId()
+        );
+
+        return OrderMapper.toOrderResponse(order);
     }
 
-
-    // ================= HELPER =================
+    /* =====================
+       HELPERS
+       ===================== */
 
     private OrderItem buildOrderItem(CartItem cartItem, Order order) {
 
@@ -147,5 +195,4 @@ public class OrderServiceImpl implements OrderService {
                 )
                 .build();
     }
-
 }

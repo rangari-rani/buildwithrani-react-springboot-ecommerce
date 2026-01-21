@@ -1,3 +1,4 @@
+import type { OrderStatus } from "../../admin/constants/orderStatus";
 import axiosInstance from "../../api/axiosInstance";
 
 /* ========= Types (local to service) ========= */
@@ -13,8 +14,8 @@ export interface OrderItem {
 export interface OrderResponse {
   orderId: number;
   totalAmount: number;
-  orderStatus: string;
-  paymentStatus: string;
+  orderStatus: OrderStatus;
+  paymentStatus: "PENDING" | "PAID";
   createdAt: string;
   items: OrderItem[];
 }
@@ -78,4 +79,12 @@ export const updateOrderStatusAdmin = async (
     { orderStatus }
   );
   return response.data;
+};
+
+
+export const cancelOrder = async (orderId: number) => {
+  const res = await axiosInstance.patch(
+    `/orders/${orderId}/cancel`
+  );
+  return res.data;
 };

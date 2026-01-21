@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getOrderById, type OrderResponse } from "../services/ordersData";
+import { cancelOrder, getOrderById, type OrderResponse } from "../services/ordersData";
 import OrderStatusBadge from "../components/OrderStatusBadge";
+import toast from "react-hot-toast";
 
 const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +10,7 @@ const OrderDetail: React.FC = () => {
 
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
+const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -48,6 +50,49 @@ const OrderDetail: React.FC = () => {
     month: "short",
     year: "numeric",
   });
+const canCancel =
+  order.orderStatus === "CREATED" ||
+  order.orderStatus === "PAID";
+
+
+
+
+const handleCancelOrder = async () => {
+  if (!order) return;
+{!canCancel && (
+  <p className="text-xs text-gray-400 text-right mt-1">
+    This order can no longer be cancelled.
+  </p>
+)}
+
+  const confirmed = window.confirm(
+    "Are you sure you want to cancel this order?"
+  );
+
+  if (!confirmed) return;
+
+ try {
+  setCancelLoading(true);
+
+  await cancelOrder(order.orderId);
+
+  setOrder({
+    ...order,
+    orderStatus: "CANCELLED",
+  });
+
+  toast.success("Order cancelled successfully");
+} catch (error: any) {
+  if (error.response?.status === 409) {
+    toast.error(error.response.data.message ?? "Order cannot be cancelled");
+  } else {
+    toast.error("Something went wrong");
+  }
+} finally {
+  setCancelLoading(false);
+}
+
+};
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-22 space-y-8">
@@ -122,6 +167,31 @@ const OrderDetail: React.FC = () => {
           <span>₹{order.totalAmount}</span>
         </div>
       </div>
+{/* ACTIONS */}
+<div className="flex justify-end">
+<button
+  disabled={!canCancel || cancelLoading}
+  onClick={handleCancelOrder}
+  className={`
+    px-4 py-2 rounded-md text-sm font-medium
+    ${
+      canCancel
+        ? "bg-red-600 text-white hover:bg-red-700"
+        : "bg-gray-200 text-gray-500 cursor-not-allowed"
+    }
+    ${cancelLoading ? "opacity-70 cursor-wait" : ""}
+  `}
+>
+  {cancelLoading ? "Cancelling..." : "Cancel Order"}
+</button>
+
+</div>
+
+{!canCancel && (
+  <p className="text-xs text-gray-400 text-right mt-1">
+    This order can no longer be cancelled.
+  </p>
+)}
 
       {/* BACK */}
       <Link
