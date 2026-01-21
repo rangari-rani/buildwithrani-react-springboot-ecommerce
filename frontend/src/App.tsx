@@ -19,6 +19,7 @@ import OrderDetail from "./orders/pages/OrderDetail";
 import AdminRoute from "./admin/components/AdminRoute";
 import AdminLoginPage from "./admin/pages/AdminLoginPage";
 import AdminOrdersPage from "./admin/pages/AdminOrdersPage";
+import AdminAuditLogsPage from "./admin/pages/AdminAuditLogsPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
         {/* ---------- ADMIN (PROTECTED) ---------- */}
+        {/* ---------- ADMIN (PROTECTED) ---------- */}
         <Route
           path="/admin"
           element={
@@ -54,8 +56,11 @@ export default function App() {
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="products/new" element={<AddProductPage />} />
           <Route path="products/:id/edit" element={<EditProductPage />} />
-          <Route path="/admin/orders" element={<AdminOrdersPage />} />
+
+          <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="audit-logs" element={<AdminAuditLogsPage />} />
         </Route>
+
       </Routes>
 
       <Footer />

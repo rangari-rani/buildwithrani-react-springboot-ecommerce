@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { adminLogout } from "../utils/adminAuth";
-import { FiHome, FiLogOut } from "react-icons/fi";
+import { FiHome, FiLogOut, FiActivity } from "react-icons/fi";
+
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -64,6 +65,20 @@ const AdminLayout = () => {
                 }
               >
                 Orders
+              </NavLink>
+              <NavLink
+                to="/admin/audit-logs"
+                className={({ isActive }) =>
+                  `block px-3 py-2 rounded-md text-sm font-medium ${isActive
+                    ? "bg-green-50 text-green-700"
+                    : "text-gray-600 hover:bg-green-50"
+                  }`
+                }
+              >
+                <div className="flex items-center gap-2">
+                  <FiActivity />
+                  Audit Logs
+                </div>
               </NavLink>
 
             </nav>
