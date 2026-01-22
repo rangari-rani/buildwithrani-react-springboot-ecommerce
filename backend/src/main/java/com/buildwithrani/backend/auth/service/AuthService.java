@@ -44,7 +44,8 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getTokenVersion()
         );
 
         return new AuthResponse(
@@ -55,8 +56,6 @@ public class AuthService {
         );
     }
 
-
-
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
@@ -66,7 +65,11 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole().name(),
+                user.getTokenVersion()
+        );
 
         return new AuthResponse(
                 true,
@@ -75,7 +78,18 @@ public class AuthService {
                 token
         );
     }
+
+    //  LOGOUT
+    public void logout(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.incrementTokenVersion();
+        userRepository.save(user);
+    }
 }
+
 
 
 

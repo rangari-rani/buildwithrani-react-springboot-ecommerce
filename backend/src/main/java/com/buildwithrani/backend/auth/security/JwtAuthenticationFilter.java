@@ -1,5 +1,7 @@
 package com.buildwithrani.backend.auth.security;
 
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
@@ -22,11 +24,14 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final SecretKey secretKey;
+    private final UserRepository userRepository;
 
     public JwtAuthenticationFilter(
-            @Value("${jwt.secret}") String secret
+            @Value("${jwt.secret}") String secret,
+            UserRepository userRepository
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -51,10 +56,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String email = claims.getSubject();
                 String role = claims.get("role", String.class);
+                Integer tokenVersion = claims.get("tokenVersion", Integer.class);
+
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                // 🔐 TOKEN REVOCATION CHECK
+                if (!tokenVersion.equals(user.getTokenVersion())) {
+                    throw new RuntimeException("Token revoked");
+                }
 
                 SimpleGrantedAuthority authority =
                         new SimpleGrantedAuthority("ROLE_" + role);
-
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -67,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .setAuthentication(authentication);
 
             } catch (Exception e) {
-                // Invalid token → ignore, request will be rejected later
+                // Invalid or revoked token
                 SecurityContextHolder.clearContext();
             }
         }
@@ -75,3 +88,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+

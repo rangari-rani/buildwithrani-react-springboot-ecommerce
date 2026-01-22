@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "../services/api";
 
 interface AuthUser {
   email: string;
@@ -32,11 +33,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser({ email });
   };
 
-  const logout = () => {
+const logout = async () => {
+  try {
+    await api.post("/api/auth/logout");
+  } catch (err) {
+    // Even if backend logout fails, clear client state
+  } finally {
     localStorage.removeItem("token");
     localStorage.removeItem("email");
     setUser(null);
-  };
+  }
+};
+
+
 
   return (
     <AuthContext.Provider

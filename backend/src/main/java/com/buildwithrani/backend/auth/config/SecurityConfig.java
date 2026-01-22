@@ -1,5 +1,6 @@
 package com.buildwithrani.backend.auth.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,6 +21,7 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -30,46 +32,41 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                //  Disable CSRF for APIs
+                // Disable CSRF for APIs
                 .csrf(csrf -> csrf.disable())
 
-                //  Enable CORS with custom configuration
+                // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                //  No sessions (JWT-based)
+                // Stateless JWT
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                //  Disable default login mechanisms
+                // Disable default auth mechanisms
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
 
-
-                //  Authorization rules
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Allow preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Public auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        //  Public product read APIs
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-
-                        //  Cart APIs (authenticated users)
                         .requestMatchers("/api/cart/**").hasRole("USER")
-
-                        //  Order APIs (authenticated users)
                         .requestMatchers("/api/orders/**").hasRole("USER")
-
-                        //  Admin APIs
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // Everything else
                         .anyRequest().authenticated()
-                );
+                )
 
+                // EXPLICIT 401 / 403 HANDLING
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED) // 401
+                        )
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN) // 403
+                        )
+                );
 
         http.addFilterBefore(
                 jwtAuthenticationFilter,
@@ -79,30 +76,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-    //  Password encoder for auth service
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    //  CORS configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
-
-        // React frontend
         config.setAllowedOrigins(List.of("http://localhost:5173"));
-
-        // Allowed HTTP methods
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
-
-        // Allowed headers
+        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-
-        // Allow cookies / authorization headers
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
@@ -112,4 +97,5 @@ public class SecurityConfig {
         return source;
     }
 }
+
 
