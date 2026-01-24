@@ -1,6 +1,7 @@
 package com.buildwithrani.backend.product.entity;
 
 import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,14 +41,19 @@ public class Product {
     @Column(nullable = false)
     private ProductStatus status;
 
-    private Double averageRating;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.status = ProductStatus.ACTIVE;
+    }
+
+    public void applyDiscount(Integer discountPercentage) {
+        if (discountPercentage != null &&
+                (discountPercentage < 0 || discountPercentage > 90)) {
+            throw new InvalidStateException("Invalid discount percentage");
+        }
+        this.discountPercentage = discountPercentage;
     }
 }

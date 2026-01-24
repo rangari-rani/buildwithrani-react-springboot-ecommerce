@@ -1,6 +1,5 @@
 package com.buildwithrani.backend.cart.service;
 
-import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.cart.dto.AddToCartRequest;
 import com.buildwithrani.backend.cart.dto.CartResponse;
 import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
@@ -18,5 +17,6 @@ public interface CartService {
 
     void clearCart();
 
-    Cart getOrCreateCart(User user);
+    Cart getCurrentUserCart();
+
 }

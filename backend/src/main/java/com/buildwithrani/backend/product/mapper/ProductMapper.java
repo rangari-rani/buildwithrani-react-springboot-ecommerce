@@ -19,7 +19,6 @@ public class ProductMapper {
                 .imageUrl(product.getImageUrl())
                 .featured(product.isFeatured())
                 .status(product.getStatus())
-                .averageRating(product.getAverageRating())
                 .createdAt(product.getCreatedAt())
                 .build();
     }

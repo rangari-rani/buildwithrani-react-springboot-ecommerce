@@ -6,10 +6,9 @@ import com.buildwithrani.backend.cart.dto.AddToCartRequest;
 import com.buildwithrani.backend.cart.dto.CartResponse;
 import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
 import com.buildwithrani.backend.cart.entity.Cart;
-import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.mapper.CartMapper;
-import com.buildwithrani.backend.cart.repository.CartItemRepository;
 import com.buildwithrani.backend.cart.repository.CartRepository;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
@@ -35,24 +33,21 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public Cart getCurrentUserCart() {
+        return getOrCreateCart();
+    }
+
+    @Override
     public CartResponse addToCart(AddToCartRequest request) {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found")
+                );
 
-        CartItem cartItem = cartItemRepository
-                .findByCartAndProduct(cart, product)
-                .orElseGet(() -> {
-                    CartItem newItem = new CartItem();
-                    newItem.setCart(cart);
-                    newItem.setProduct(product);
-                    newItem.setQuantity(0);
-                    return newItem;
-                });
 
-        cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
-        cartItemRepository.save(cartItem);
+        cart.addProduct(product, request.getQuantity());
 
         return cartMapper.toResponse(cart);
     }
@@ -62,14 +57,12 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found")
+                );
 
-        CartItem cartItem = cartItemRepository
-                .findByCartAndProduct(cart, product)
-                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
 
-        cartItem.setQuantity(request.getQuantity());
-        cartItemRepository.save(cartItem);
+        cart.updateProductQuantity(product, request.getQuantity());
 
         return cartMapper.toResponse(cart);
     }
@@ -79,27 +72,18 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found")
+                );
 
-        cartItemRepository.findByCartAndProduct(cart, product)
-                .ifPresent(cartItemRepository::delete);
+
+        cart.removeProduct(product);
     }
 
     @Override
     public void clearCart() {
         Cart cart = getOrCreateCart();
-        cart.getItems().clear();
-        cartRepository.save(cart);
-    }
-
-    @Override
-    public Cart getOrCreateCart(User user) {
-        return cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart cart = new Cart();
-                    cart.setUser(user);
-                    return cartRepository.save(cart);
-                });
+        cart.clear();
     }
 
     // ----------------- HELPERS -----------------
@@ -108,11 +92,7 @@ public class CartServiceImpl implements CartService {
         User user = getCurrentUser();
 
         return cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart cart = new Cart();
-                    cart.setUser(user);
-                    return cartRepository.save(cart);
-                });
+                .orElseGet(() -> cartRepository.save(new Cart(user)));
     }
 
     private User getCurrentUser() {
@@ -121,6 +101,9 @@ public class CartServiceImpl implements CartService {
                 .getName();
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found")
+                );
+
     }
 }

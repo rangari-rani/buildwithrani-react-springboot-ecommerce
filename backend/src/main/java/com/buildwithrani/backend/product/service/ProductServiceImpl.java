@@ -2,6 +2,8 @@ package com.buildwithrani.backend.product.service;
 
 import com.buildwithrani.backend.common.cloudinary.CloudinaryService;
 import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.product.dto.ProductRequestDTO;
 import com.buildwithrani.backend.product.dto.ProductResponseDTO;
 import com.buildwithrani.backend.product.entity.Product;
@@ -46,10 +48,12 @@ public class ProductServiceImpl implements ProductService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
-                .discountPercentage(request.getDiscountPercentage())
                 .featured(Boolean.TRUE.equals(request.getFeatured()))
+                .status(ProductStatus.INACTIVE)
                 .imageUrl(imageUrl)
                 .build();
+
+        product.applyDiscount(request.getDiscountPercentage());
 
         Product savedProduct = productRepository.save(product);
 
@@ -64,12 +68,15 @@ public class ProductServiceImpl implements ProductService {
             MultipartFile image
     ) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        if (product.getStatus() == ProductStatus.DISCONTINUED) {
+            throw new InvalidStateException("Discontinued products cannot be modified");
+        }
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
-        product.setDiscountPercentage(request.getDiscountPercentage());
+        product.applyDiscount(request.getDiscountPercentage());
         product.setFeatured(Boolean.TRUE.equals(request.getFeatured()));
 
         //  ONLY update image if a new one is provided
@@ -104,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO getProductById(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return productMapper.toResponse(product);
     }
@@ -113,8 +120,11 @@ public class ProductServiceImpl implements ProductService {
     public void updateProductStatus(Long productId, ProductStatus status) {
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        if (product.getStatus() == ProductStatus.DISCONTINUED) {
+            throw new InvalidStateException("Discontinued products cannot be modified");
+        }
         ProductStatus previousStatus = product.getStatus();
 
         // no-op protection (optional but clean)
@@ -159,8 +169,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void updateFeaturedStatus(Long productId, boolean featured) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        if (product.getStatus() == ProductStatus.DISCONTINUED) {
+            throw new InvalidStateException("Discontinued products cannot be modified");
+        }
         product.setFeatured(featured);
         productRepository.save(product);
     }

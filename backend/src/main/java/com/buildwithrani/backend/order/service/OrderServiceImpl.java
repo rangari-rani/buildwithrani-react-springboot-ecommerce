@@ -9,6 +9,9 @@ import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.repository.CartItemRepository;
 import com.buildwithrani.backend.cart.service.CartService;
+import com.buildwithrani.backend.common.exception.AccessDeniedException;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.entity.Order;
 import com.buildwithrani.backend.order.entity.OrderItem;
@@ -28,7 +31,6 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartItemRepository cartItemRepository;
     private final CartService cartService;
     private final UserRepository userRepository;
     private final AuditService auditService;
@@ -40,13 +42,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse placeOrder(String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Cart cart = cartService.getOrCreateCart(user);
+        User user = getCurrentUser();
+        Cart cart = cartService.getCurrentUserCart();
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new InvalidStateException("Cannot place order with empty cart");
+
         }
 
         BigDecimal totalAmount = cart.getItems().stream()
@@ -68,8 +69,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        cartItemRepository.deleteByCart(cart);
-        cart.getItems().clear();
+        cartService.clearCart();
 
         return OrderMapper.toOrderResponse(savedOrder);
     }
@@ -77,8 +77,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getMyOrders(String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentUser();
 
         return orderRepository.findByUserWithItems(user)
                 .stream()
@@ -89,14 +88,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getOrderById(Long orderId, String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentUser();
 
         Order order = orderRepository.findByIdWithItems(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("You are not allowed to access this order");
         }
 
         return OrderMapper.toOrderResponse(order);
@@ -105,14 +103,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse cancelOrder(Long orderId, String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentUser();
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("You are not allowed to access this order");
         }
 
         OrderStatus previousStatus = order.getOrderStatus();
@@ -149,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
     ) {
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         OrderStatus previousStatus = order.getOrderStatus();
 
@@ -181,6 +178,7 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderItem buildOrderItem(CartItem cartItem, Order order) {
 
+// Snapshot price at order time to avoid future price changes affecting past orders
         BigDecimal priceAtPurchase = cartItem.getProduct().getPrice();
         Integer quantity = cartItem.getQuantity();
 
@@ -195,4 +193,16 @@ public class OrderServiceImpl implements OrderService {
                 )
                 .build();
     }
+
+    private User getCurrentUser() {
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        if (email == null) {
+            throw new AccessDeniedException("Unauthenticated access");
+        }
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
 }

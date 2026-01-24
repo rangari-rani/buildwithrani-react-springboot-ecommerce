@@ -29,7 +29,5 @@ public class ProductResponseDTO {
 
     private ProductStatus status;
 
-    private Double averageRating;
-
     private LocalDateTime createdAt;
 }

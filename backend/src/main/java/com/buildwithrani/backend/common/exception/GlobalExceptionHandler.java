@@ -66,5 +66,4 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, status);
     }
 
-
 }

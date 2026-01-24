@@ -1,13 +1,12 @@
 package com.buildwithrani.backend.cart.entity;
 
+import com.buildwithrani.backend.common.exception.InvalidStateException;
 import com.buildwithrani.backend.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 public class CartItem {
 
     @Id
@@ -27,4 +26,32 @@ public class CartItem {
     // Quantity of product
     @Column(nullable = false)
     private Integer quantity;
+
+    protected CartItem() {
+        // for JPA
+    }
+
+    public CartItem(Cart cart, Product product, int initialQuantity) {
+        if (initialQuantity <= 0) {
+            throw new InvalidStateException("Quantity must be greater than zero");
+        }
+        this.cart = cart;
+        this.product = product;
+        this.quantity = initialQuantity;
+    }
+
+    public void increaseQuantity(int delta) {
+        if (delta <= 0) {
+            throw new InvalidStateException("Quantity increment must be positive");
+        }
+        this.quantity += delta;
+    }
+
+    public void updateQuantity(int newQuantity) {
+        if (newQuantity <= 0) {
+            throw new InvalidStateException("Quantity must be greater than zero");
+        }
+        this.quantity = newQuantity;
+    }
+
 }
