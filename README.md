@@ -1,16 +1,26 @@
 # Wellness Cart — Role-Based E-Commerce System
 
-A full-stack React, Spring Boot, and MySQL application demonstrating real-world eCommerce workflows, including product discovery, cart management, and order processing.
+Backend-focused e-commerce system built with Java, Spring Boot, and MySQL, with a React frontend.
 
-Built with a focus on clean UI architecture, reusable components, and scalable state management.
+This project demonstrates domain-driven backend design, including:
+
+- State-driven Order lifecycle management
+- Transactionally consistent Cart aggregate with one-way Cart → Order transition
+- JWT-based authentication with role-based access (USER / ADMIN)
+- Centralized exception handling and enforced business rules
+- Admin-controlled product availability
+
+The React client acts as a consumer of backend state; lifecycle rules and permissions are enforced server-side.
 
 ---
 
 ## ⚙️ Tech Stack
 
-- ⚛️ [**React.js (Vite)**](https://vitejs.dev/) – modern frontend build tool for fast development  
-- 🌱 [**Spring Boot**](https://spring.io/projects/spring-boot) – framework for building production-ready REST APIs  
-- 🗄️ [**MySQL**](https://www.mysql.com/) – relational database for persistent data storage  
+- ☕ [**Java + Spring Boot**](https://spring.io/projects/spring-boot) – backend framework for domain-driven REST APIs and order workflows  
+- 🔐 **Spring Security + JWT** – stateless authentication and role-based access control  
+- 🗄️ [**MySQL**](https://www.mysql.com/) – relational database for transactional persistence  
+- ⚛️ [**React.js (Vite)**](https://vitejs.dev/) – frontend client for consuming backend APIs  
+
 
 ---
 
@@ -22,16 +32,6 @@ _Admin Product_
 _Cart Page_
 ![Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listorder.png)
 _Admin Order_
-
----
-
-## ✨ Features
-
-- Secure authentication with signup, login, and role-based access (user/admin).
-- Product management with featured flags, new arrivals sorting, image uploads, and soft delete (activate/deactivate).
-- Cart system enforcing one active cart per authenticated user with quantity-based item updates.
-- Order workflows with immutable order history and admin-controlled status transitions.
-- Dedicated admin controls for managing products and orders.
 
 ---
 
@@ -56,7 +56,7 @@ src/
 ```text
 src/main/java/com/buildwithrani/ecommerce
 ├─ controller/        # REST API endpoints
-├─ service/           # logic
+├─ service/           # business logic
 ├─ dto/               # Request/response objects
 ├─ model/             # JPA entities
 ├─ repository/        # Database access
