@@ -16,22 +16,22 @@ The React client acts as a consumer of backend state; lifecycle rules and permis
 
 ## ⚙️ Tech Stack
 
-- ☕ [**Java + Spring Boot**](https://spring.io/projects/spring-boot) – backend framework for domain-driven REST APIs and order workflows  
-- 🔐 **Spring Security + JWT** – stateless authentication and role-based access control  
-- 🗄️ [**MySQL**](https://www.mysql.com/) – relational database for transactional persistence  
-- ⚛️ [**React.js (Vite)**](https://vitejs.dev/) – frontend client for consuming backend APIs  
+- [**Java + Spring Boot**](https://spring.io/projects/spring-boot) – backend framework for domain-driven REST APIs and order workflows  
+- **Spring Security + JWT** – stateless authentication and role-based access control  
+- [**MySQL**](https://www.mysql.com/) – relational database for transactional persistence  
+- [**React.js (Vite)**](https://vitejs.dev/) – frontend client for consuming backend APIs  
 
 
 ---
 
 ## 📸 Screenshots
 
-![Product](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listproduct.png)
-_Admin Product_
-![Cart Page](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listcart.png)
-_Cart Page_
-![Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/27dd92048f5bdcf3dda0a6a7bd93b4a2c907c45e/frontend/public/listorder.png)
-_Admin Order_
+![Product](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/audit.png)
+_Audit Logging_
+![Cart Page](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listorder.png)
+_Order Management_
+![Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listproduct.png)
+_Prouct Management_
 
 ---
 
