@@ -14,7 +14,7 @@ public interface ProductService {
     ProductResponseDTO updateProduct(Long id, ProductRequestDTO request, MultipartFile image);
     List<ProductResponseDTO> getAllProducts();
 
-    // -------- USER --------
+    // -------- USER -------------
     List<ProductResponseDTO> getActiveProducts();
 
     ProductResponseDTO getProductById(Long productId);
