@@ -177,6 +177,7 @@ public class ProductServiceImpl implements ProductService {
         product.setFeatured(featured);
         productRepository.save(product);
     }
+   
     @Override
     public List<ProductResponseDTO> getFeaturedProducts() {
         return productRepository

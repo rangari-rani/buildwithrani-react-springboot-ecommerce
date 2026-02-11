@@ -19,5 +19,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findTop5ByStatusOrderByCreatedAtDesc(
             ProductStatus status
     );
-
 }
