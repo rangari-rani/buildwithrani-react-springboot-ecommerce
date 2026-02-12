@@ -1,5 +1,7 @@
 package com.buildwithrani.backend.cart.service;
 
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.auth.repository.UserRepository;
 import com.buildwithrani.backend.cart.dto.AddToCartRequest;
@@ -25,6 +27,7 @@ public class CartServiceImpl implements CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
+    private final AuditService auditService;
 
     @Override
     public CartResponse getCart() {
@@ -48,7 +51,13 @@ public class CartServiceImpl implements CartService {
 
 
         cart.addProduct(product, request.getQuantity());
-
+        auditService.logAction(
+                getCurrentUserId(),
+                ActorRole.USER,
+                "CART_ITEM_ADDED",
+                "CART",
+                cart.getId()
+        );
         return cartMapper.toResponse(cart);
     }
 
@@ -63,7 +72,13 @@ public class CartServiceImpl implements CartService {
 
 
         cart.updateProductQuantity(product, request.getQuantity());
-
+        auditService.logAction(
+                getCurrentUserId(),
+                ActorRole.USER,
+                "CART_ITEM_UPDATED",
+                "CART",
+                cart.getId()
+        );
         return cartMapper.toResponse(cart);
     }
 
@@ -78,12 +93,26 @@ public class CartServiceImpl implements CartService {
 
 
         cart.removeProduct(product);
+        auditService.logAction(
+                getCurrentUserId(),
+                ActorRole.USER,
+                "CART_ITEM_REMOVED",
+                "CART",
+                cart.getId()
+        );
     }
 
     @Override
     public void clearCart() {
         Cart cart = getOrCreateCart();
         cart.clear();
+        auditService.logAction(
+                getCurrentUserId(),
+                ActorRole.USER,
+                "CART_CLEARED",
+                "CART",
+                cart.getId()
+        );
     }
 
     // ----------------- HELPERS -----------------
@@ -104,6 +133,10 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found")
                 );
-
     }
+
+    private Long getCurrentUserId() {
+        return getCurrentUser().getId();
+    }
+
 }

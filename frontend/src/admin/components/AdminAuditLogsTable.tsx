@@ -16,6 +16,7 @@ const roleBadgeClasses: Record<string, string> = {
 const entityBadgeClasses: Record<string, string> = {
   ORDER: "bg-green-100 text-green-700",
   PRODUCT: "bg-orange-100 text-orange-700",
+  CART: "bg-blue-100 text-blue-700",
 };
 
 const AdminAuditLogsTable: React.FC<AdminAuditLogsTableProps> = ({
@@ -88,26 +89,27 @@ const AdminAuditLogsTable: React.FC<AdminAuditLogsTableProps> = ({
                 </span>
               </td>
 
-              <td className="px-3 py-2 border">
-                {log.entityType === "ORDER" ? (
-                  <Link
-                    to={`/admin/orders`}
-                    className="text-green-700 hover:underline font-medium"
-                  >
-                    #{log.entityId}
-                  </Link>
-                ) : log.entityType === "PRODUCT" ? (
-                  <Link
-                    to={`/admin/products/${log.entityId}/edit`}
-                    className="text-green-700 hover:underline font-medium"
-                  >
-                    #{log.entityId}
-                  </Link>
-                ) : (
-                  log.entityId
-                )}
-              </td>
-
+            <td className="px-3 py-2 border">
+  {log.entityType === "ORDER" ? (
+    <Link
+      to={`/admin/orders`}
+      className="text-green-700 hover:underline font-medium"
+    >
+      #{log.entityId}
+    </Link>
+  ) : log.entityType === "PRODUCT" ? (
+    <Link
+      to={`/admin/products/${log.entityId}/edit`}
+      className="text-green-700 hover:underline font-medium"
+    >
+      #{log.entityId}
+    </Link>
+  ) : (
+    <span className="font-medium text-blue-700">
+      #{log.entityId}
+    </span>
+  )}
+</td>
             </tr>
           ))}
         </tbody>

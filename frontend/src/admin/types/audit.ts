@@ -2,7 +2,7 @@
 
 export type ActorRole = "ADMIN" | "USER";
 
-export type EntityType = "ORDER" | "PRODUCT";
+export type EntityType = "ORDER" | "PRODUCT" | "CART";
 
 export interface AuditLog {
   id: number;
@@ -11,5 +11,5 @@ export interface AuditLog {
   action: string;
   entityType: EntityType;
   entityId: number;
-  timestamp: string; // ISO string from backend
+  timestamp: string;
 }

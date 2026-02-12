@@ -30,6 +30,11 @@ public class AuditController {
                     );
         }
 
+        if (entityType != null) {
+            return auditLogRepository.findByEntityTypeOrderByTimestampDesc(entityType);
+        }
+
+
         return auditLogRepository.findAllByOrderByTimestampDesc();
     }
 }

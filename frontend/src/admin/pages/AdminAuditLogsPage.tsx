@@ -14,32 +14,29 @@ const AdminAuditLogsPage: React.FC = () => {
   const [entityId, setEntityId] = useState<string>("");
   const [searchParams] = useSearchParams();
 
-const fetchLogs = async (
-  type: EntityType | "",
-  id: string
-) => {
-  setLoading(true);
-  try {
-    const params =
-      type && id
-        ? {
-            entityType: type,
-            entityId: Number(id),
-          }
-        : undefined;
+  const fetchLogs = async (
+    type: EntityType | "",
+    id: string
+  ) => {
+    setLoading(true);
+    try {
+      const params: any = {};
 
-    const data = await adminAuditApi.fetchAuditLogs(params);
-    setLogs(data);
-  } catch (error) {
-    console.error("Failed to fetch audit logs", error);
-    setLogs([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (type) params.entityType = type;
+      if (id) params.entityId = Number(id);
 
+      const data = await adminAuditApi.fetchAuditLogs(
+        Object.keys(params).length ? params : undefined
+      );
 
-
+      setLogs(data);
+    } catch (error) {
+      console.error("Failed to fetch audit logs", error);
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const urlEntityType = searchParams.get("entityType") as EntityType | null;
@@ -55,9 +52,9 @@ const fetchLogs = async (
 
     // fetch logs using URL params if present
     fetchLogs(
-  urlEntityType ?? "",
-  urlEntityId ?? ""
-);
+      urlEntityType ?? "",
+      urlEntityId ?? ""
+    );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -65,14 +62,14 @@ const fetchLogs = async (
 
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
- fetchLogs(entityType, entityId);
+    fetchLogs(entityType, entityId);
 
   };
 
   const handleClearFilters = () => {
     setEntityType("");
     setEntityId("");
-  fetchLogs("", "");
+    fetchLogs("", "");
 
   };
 
@@ -99,6 +96,7 @@ const fetchLogs = async (
             <option value="">All</option>
             <option value="ORDER">Order</option>
             <option value="PRODUCT">Product</option>
+            <option value="CART">Cart</option>
           </select>
         </div>
 
