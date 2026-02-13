@@ -24,7 +24,7 @@ public class AuditLog {
     private String action;
 
     @Column(nullable = false)
-    private String entityType;
+    private String entityType; // e.g., "PRODUCT", "ORDER"
 
     @Column(nullable = false)
     private Long entityId;
@@ -33,6 +33,13 @@ public class AuditLog {
     @Column(nullable = false)
     private ActorRole actorRole;
 
+    /**
+     * Store extra details here like "Price changed from 10 to 20"
+     * or "User IP: 192.168.1.1". Using TEXT to allow long JSON strings.
+     */
+    @Column(columnDefinition = "TEXT")
+    private String metadata;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime timestamp;
 
@@ -40,18 +47,21 @@ public class AuditLog {
     protected void onCreate() {
         this.timestamp = LocalDateTime.now();
     }
+
+    // Updated constructor to include metadata
     public AuditLog(
             Long actorId,
             ActorRole actorRole,
             String action,
             String entityType,
-            Long entityId
+            Long entityId,
+            String metadata
     ) {
         this.actorId = actorId;
         this.actorRole = actorRole;
         this.action = action;
         this.entityType = entityType;
         this.entityId = entityId;
+        this.metadata = metadata;
     }
-
 }

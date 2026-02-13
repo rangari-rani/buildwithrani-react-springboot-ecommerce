@@ -14,20 +14,29 @@ public class AuditServiceImpl implements AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
+    // Overloaded method for simple logging (Backwards compatibility)
+    @Override
+    public void logAction(Long actorId, ActorRole actorRole, String action, String entityType, Long entityId) {
+        this.logAction(actorId, actorRole, action, entityType, entityId, null);
+    }
+
+    // New primary method with Metadata support
     @Override
     public void logAction(
             Long actorId,
             ActorRole actorRole,
             String action,
             String entityType,
-            Long entityId
+            Long entityId,
+            String metadata
     ) {
         AuditLog auditLog = new AuditLog(
                 actorId,
                 actorRole,
                 action,
                 entityType,
-                entityId
+                entityId,
+                metadata // Now capturing the "Why" and "How"
         );
 
         auditLogRepository.save(auditLog);

@@ -1,5 +1,6 @@
 package com.buildwithrani.backend.cart.service;
 
+import com.buildwithrani.backend.audit.entity.Audit;
 import com.buildwithrani.backend.audit.enums.ActorRole;
 import com.buildwithrani.backend.audit.service.AuditService;
 import com.buildwithrani.backend.auth.model.User;
@@ -27,7 +28,7 @@ public class CartServiceImpl implements CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
-    private final AuditService auditService;
+    // REMOVED: auditService dependency is no longer needed here!
 
     @Override
     public CartResponse getCart() {
@@ -41,102 +42,57 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Audit(action = "CART_ITEM_ADDED", entityType = "CART") // The Aspect handles the logging
     public CartResponse addToCart(AddToCartRequest request) {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Product not found")
-                );
-
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         cart.addProduct(product, request.getQuantity());
-        auditService.logAction(
-                getCurrentUserId(),
-                ActorRole.USER,
-                "CART_ITEM_ADDED",
-                "CART",
-                cart.getId()
-        );
         return cartMapper.toResponse(cart);
     }
 
     @Override
+    @Audit(action = "CART_ITEM_UPDATED", entityType = "CART")
     public CartResponse updateCartItem(UpdateCartItemRequest request) {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Product not found")
-                );
-
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         cart.updateProductQuantity(product, request.getQuantity());
-        auditService.logAction(
-                getCurrentUserId(),
-                ActorRole.USER,
-                "CART_ITEM_UPDATED",
-                "CART",
-                cart.getId()
-        );
         return cartMapper.toResponse(cart);
     }
 
     @Override
+    @Audit(action = "CART_ITEM_REMOVED", entityType = "CART")
     public void removeItem(Long productId) {
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Product not found")
-                );
-
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         cart.removeProduct(product);
-        auditService.logAction(
-                getCurrentUserId(),
-                ActorRole.USER,
-                "CART_ITEM_REMOVED",
-                "CART",
-                cart.getId()
-        );
     }
 
     @Override
+    @Audit(action = "CART_CLEARED", entityType = "CART")
     public void clearCart() {
         Cart cart = getOrCreateCart();
         cart.clear();
-        auditService.logAction(
-                getCurrentUserId(),
-                ActorRole.USER,
-                "CART_CLEARED",
-                "CART",
-                cart.getId()
-        );
     }
 
-    // ----------------- HELPERS -----------------
-
+    // ----------------- HELPERS (Kept the same) -----------------
     private Cart getOrCreateCart() {
         User user = getCurrentUser();
-
         return cartRepository.findByUser(user)
                 .orElseGet(() -> cartRepository.save(new Cart(user)));
     }
 
     private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found")
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
-
-    private Long getCurrentUserId() {
-        return getCurrentUser().getId();
-    }
-
 }
