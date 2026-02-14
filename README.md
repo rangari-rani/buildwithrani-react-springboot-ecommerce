@@ -26,11 +26,11 @@ The React client acts as a consumer of backend state; lifecycle rules and permis
 
 ## 📸 Screenshots
 
-![Product](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/audit.png)
+![Audit](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/25f9dedd42809e989f8d3c79c6d73c204c06cd31/frontend/public/audit.png)
 
-![Cart Page](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listorder.png)
+![List Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listorder.png)
 
-![Order](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listproduct.png)
+![List Product](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/1446b4d38f40087f47083fcf5e815c11e1b3493b/frontend/public/listproduct.png)
 
 ---
 
