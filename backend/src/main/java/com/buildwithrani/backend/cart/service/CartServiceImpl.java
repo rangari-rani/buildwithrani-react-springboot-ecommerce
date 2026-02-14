@@ -11,6 +11,8 @@ import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
 import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.cart.mapper.CartMapper;
 import com.buildwithrani.backend.cart.repository.CartRepository;
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
 import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.repository.ProductRepository;
@@ -48,6 +50,10 @@ public class CartServiceImpl implements CartService {
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new InvalidStateException("Product is not available for purchase");
+        }
 
         cart.addProduct(product, request.getQuantity());
         return cartMapper.toResponse(cart);
