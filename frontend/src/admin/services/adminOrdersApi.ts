@@ -16,10 +16,10 @@ export const getAllOrders = async (): Promise<OrderResponse[]> => {
 export const updateOrderStatus = async (
   orderId: number,
   orderStatus: OrderStatus
-): Promise<OrderResponse> => {
-  const res = await axiosInstance.put<OrderResponse>(
+): Promise<void> => {
+  await axiosInstance.put(
     `/admin/orders/${orderId}/status`,
     { orderStatus }
   );
-  return res.data;
 };
+

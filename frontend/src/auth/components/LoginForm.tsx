@@ -60,7 +60,7 @@ const redirectTo =
         </label>
         <input
           type="email"
-          placeholder="you@example.com"
+          placeholder="user@demo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
@@ -77,7 +77,7 @@ const redirectTo =
         <div className="relative">
           <input
             type={type}
-            placeholder="••••••••"
+            placeholder="Password123!"
             value={passwordValue}
             onChange={(e) => setPasswordValue(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none pr-10"

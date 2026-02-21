@@ -56,7 +56,7 @@ const AdminLoginPage = () => {
 
           <input
             type="email"
-            placeholder="admin@test.com"
+            placeholder="admin@demo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border px-3 py-2 rounded"
@@ -65,7 +65,7 @@ const AdminLoginPage = () => {
 
           <input
             type="password"
-            placeholder="admin123"
+            placeholder="Password123!"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border px-3 py-2 rounded"

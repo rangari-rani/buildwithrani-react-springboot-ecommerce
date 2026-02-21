@@ -14,6 +14,7 @@ import {
   type CartItem,
 } from "../services/cartService";
 import { useAuth } from "../../auth/context/AuthContext";
+import toast from "react-hot-toast";
 
 interface CartContextType {
   items: CartItem[];
@@ -48,11 +49,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   /**
    * Add product to cart (optimistic UX)
    */
-  const addItem = async (productId: number, quantity = 1) => {
+ const addItem = async (productId: number, quantity = 1) => {
+  try {
+    // The backend performs the 'Gatekeeper' check here
     const data = await addToCart(productId, quantity);
     setItems(data.items);
-  };
-
+  } catch (error) {
+    // If the Boundary is violated, the state never updates
+    toast.error("This item is no longer available for purchase.");
+  }
+};
   /**
    * Update quantity (optimistic UX)
    */

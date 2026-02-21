@@ -16,30 +16,28 @@ const [status, setStatus] = useState<OrderStatus>(
 
   const [loading, setLoading] = useState(false);
 
-  const handleStatusChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const newStatus = e.target.value as OrderStatus;
+const handleStatusChange = async (
+  e: React.ChangeEvent<HTMLSelectElement>
+) => {
+  const newStatus = e.target.value as OrderStatus;
 
-    if (newStatus === status) return;
+  if (newStatus === status) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const updatedOrder = await updateOrderStatus(
-        order.orderId,
-        newStatus
-      );
+    await updateOrderStatus(order.orderId, newStatus);
 
-      // ✅ backend is source of truth
-      setStatus(updatedOrder.orderStatus);
-    } catch (error) {
-      console.error("Failed to update order status", error);
-      alert("Failed to update order status");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Optimistic UI update
+    setStatus(newStatus);
+
+  } catch (error) {
+    console.error("Failed to update order status", error);
+    alert("Failed to update order status");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <tr className="border-t">

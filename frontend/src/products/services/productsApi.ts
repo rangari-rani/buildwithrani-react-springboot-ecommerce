@@ -3,7 +3,6 @@ import type { Product } from "./productsData";
 
 /**
  * Fetch all ACTIVE products
- * Backend: GET /api/products
  */
 export const fetchProducts = async (): Promise<Product[]> => {
   const response = await axiosInstance.get("/products");
@@ -11,8 +10,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 };
 
 /**
- * Fetch single product by ID
- * Backend: GET /api/products/{id}
+ * Fetch single product
  */
 export const fetchProductById = async (
   productId: number
@@ -21,12 +19,18 @@ export const fetchProductById = async (
   return response.data;
 };
 
-export const fetchFeaturedProducts = async () => {
-  const res = await axiosInstance.get("/products/featured");
-  return res.data;
+/**
+ * Featured = client side filter
+ */
+export const fetchFeaturedProducts = async (): Promise<Product[]> => {
+  const products = await fetchProducts();
+  return products.filter((p) => p.featured);
 };
 
-export const fetchNewArrivals = async () => {
-  const res = await axiosInstance.get("/products/new-arrivals");
-  return res.data;
+/**
+ * New arrivals = latest products
+ */
+export const fetchNewArrivals = async (): Promise<Product[]> => {
+  const products = await fetchProducts();
+  return products.slice(0, 4);
 };

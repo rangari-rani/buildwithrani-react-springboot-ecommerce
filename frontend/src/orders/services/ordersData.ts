@@ -73,12 +73,11 @@ export const getAllOrdersAdmin = async (): Promise<OrderResponse[]> => {
 export const updateOrderStatusAdmin = async (
   orderId: number,
   orderStatus: string
-): Promise<OrderResponse> => {
-  const response = await axiosInstance.put<OrderResponse>(
+): Promise<void> => {
+  await axiosInstance.put(
     `/admin/orders/${orderId}/status`,
     { orderStatus }
   );
-  return response.data;
 };
 
 
