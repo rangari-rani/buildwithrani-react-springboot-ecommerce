@@ -207,16 +207,8 @@ jwt.expiration=86400000
 
 ---
 
-## ✨ Part of BuildWithRani
+## 👩‍💻 Author
 
-This project is part of the **BuildWithRani** learning series.
-
-📖 Implementation details:  [buildwithrani.com](https://buildwithrani.com)
-
----
-
-## 📬 Contact
-
-Connect with me on **[LinkedIn – Rani Rangari](https://linkedin.com/in/rani-rangari)**  
-
-⭐ If you found this project helpful, consider giving it a star!
+Rani Rangari  
+https://linkedin.com/in/rani-rangari  
+https://buildwithrani.com
