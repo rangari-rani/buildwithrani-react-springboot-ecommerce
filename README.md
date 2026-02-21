@@ -1,26 +1,106 @@
-# Wellness Cart — Role-Based E-Commerce System
+<div align="center">
 
-Backend-focused e-commerce system built with Java, Spring Boot, and MySQL, with a React frontend.
+# 🛒 Wellness Cart  
+### Domain-Driven E-Commerce System  
+**Built by Rani Rangari**
 
-This project demonstrates domain-driven backend design, including:
+A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, showcasing explicit order lifecycles, role-based security, transactional integrity, and audit logging.
 
-- State-driven Order lifecycle management
-- Transactionally consistent Cart aggregate with one-way Cart → Order transition
-- JWT-based authentication with role-based access (USER / ADMIN)
-- Centralized exception handling and enforced business rules
-- Admin-controlled product availability
+<br/>
 
-The React client acts as a consumer of backend state; lifecycle rules and permissions are enforced server-side.
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
+![React](https://img.shields.io/badge/React-Vite-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8-blue)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![JWT](https://img.shields.io/badge/Auth-JWT-purple)
 
+<br/>
+
+<a href="https://buildwithrani.com">📘 BuildWithRani Docs</a>
+&nbsp;•&nbsp;
+<a href="https://linkedin.com/in/rani-rangari">💼 LinkedIn</a>
+
+</div>
+
+---
+
+## Core Features
+
+- Explicit Order State Machine (CREATED → PAID → PACKED → SHIPPED → DELIVERED)
+- Cart aggregate with one-way Cart → Order transition
+- JWT-based authentication with role-aware access control (USER / ADMIN)
+- Transactional audit logging using Spring AOP
+- Admin-controlled product lifecycle (ACTIVE / INACTIVE)
+- Dockerized full stack (React + Spring Boot + MySQL)
+- Automatically seeded demo data (users, products, orders)
+- Clean REST API design ready for OpenAPI / Swagger integration
+  
 ---
 
 ## ⚙️ Tech Stack
 
-- [**Java + Spring Boot**](https://spring.io/projects/spring-boot) – backend framework for domain-driven REST APIs and order workflows  
-- **Spring Security + JWT** – stateless authentication and role-based access control  
-- [**MySQL**](https://www.mysql.com/) – relational database for transactional persistence  
-- [**React.js (Vite)**](https://vitejs.dev/) – frontend client for consuming backend APIs  
+### Backend
+- [**Java 17**](https://www.oracle.com/java/) – core language for backend development  
+- [**Spring Boot**](https://spring.io/projects/spring-boot) – framework for building domain-driven REST APIs and workflow orchestration  
+- [**Spring Security**](https://spring.io/projects/spring-security) – authentication and authorization layer  
+- [**JWT (JSON Web Tokens)**](https://jwt.io/) – stateless token-based authentication  
 
+### Frontend
+- [**React**](https://react.dev/) – component-based UI framework  
+- [**Vite**](https://vitejs.dev/) – modern frontend build tool and dev server  
+
+### Database
+- [**MySQL 8**](https://www.mysql.com/) – relational database for transactional persistence  
+
+### Infrastructure
+- [**Docker**](https://www.docker.com/) – containerization platform  
+- [**Docker Compose**](https://docs.docker.com/compose/) – multi-container orchestration  
+- [**Nginx**](https://nginx.org/) – production-grade static frontend server and SPA routing  
+
+---
+
+## 🐳 Quick Start (Recommended)
+
+Run the entire stack with one command:
+
+```bash
+docker compose up --build
+```
+
+After startup:
+
+- **Frontend** → http://localhost:3000
+- **Backend** → http://localhost:8080
+
+To reset database and reseed demo data:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+---
+
+## 🔐 Demo Credentials
+
+```bash
+ADMIN  
+email: admin@demo.com  
+password: Password123!
+
+USER  
+email: user@demo.com  
+password: Password123!
+```
+
+## 🏛 Architecture Highlights
+
+- Stateless REST APIs
+- Domain-enforced lifecycle invariants
+- Role-based authorization at API boundary
+- Containerized multi-service deployment
+- Healthcheck-based startup orchestration
 
 ---
 
@@ -53,20 +133,21 @@ src/
 ### Spring Boot
 
 ```text
-src/main/java/com/buildwithrani/ecommerce
-├─ controller/        # REST API endpoints
-├─ service/           # business logic
-├─ dto/               # Request/response objects
-├─ model/             # JPA entities
-├─ repository/        # Database access
-├─ security/          # JWT utilities
-├─ config/            # Application configuration
-└─ EcommerceApplication.java
+src/main/java/com/buildwithrani/backend
+├─ audit/
+├─ auth/
+├─ cart/
+├─ order/
+├─ product/
+├─ common/
+└─ BackendApplication.java
 ```
 
 ---
 
-## 🔧 Setup Instructions - React
+## 🛠 Local Development (Without Docker)
+
+ **Setup Instructions - React**
 
 ### 1. Clone the repository
 
@@ -119,7 +200,7 @@ jwt.expiration=86400000
 ```
 
 ### 3. Start the development server
- Navigate to: `src/main/java/com/buildwithrani/ecommerce/EcommerceApplication.java`  
+ Navigate to: `src/main/java/com/buildwithrani/backend/BackendApplication.java`    
  Click the **Run ▶️ button**  
 > App runs at:
 🌐 http://localhost:8080
