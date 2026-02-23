@@ -38,6 +38,15 @@ public class Order {
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
+    @Column(name = "payment_signature")
+    private String paymentSignature;
+
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
@@ -47,6 +56,7 @@ public class Order {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
 
     /* =====================
        LIFECYCLE MANAGEMENT
@@ -62,15 +72,23 @@ public class Order {
        DOMAIN METHODS
        ===================== */
 
-    public void markAsPaid() {
+    public void markPaymentSuccess(String paymentId, String signature) {
+
         if (!orderStatus.canTransitionTo(OrderStatus.PAID)) {
             throw new InvalidStateException(
                     "Cannot mark order as PAID from state: " + orderStatus
             );
-
         }
-        this.paymentStatus = PaymentStatus.PAID;
+
+        this.paymentStatus = PaymentStatus.SUCCESS;
+        this.razorpayPaymentId = paymentId;
+        this.paymentSignature = signature;
         this.orderStatus = OrderStatus.PAID;
+    }
+
+    public void markPaymentCreated(String razorpayOrderId) {
+        this.paymentStatus = PaymentStatus.CREATED;
+        this.razorpayOrderId = razorpayOrderId;
     }
 
     public void advanceByAdmin(OrderStatus nextStatus) {

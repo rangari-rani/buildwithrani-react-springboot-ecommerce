@@ -62,7 +62,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = Order.create(user, totalAmount, orderItems);
         orderItems.forEach(item -> item.setOrder(order));
 
-        order.markAsPaid();
         Order savedOrder = orderRepository.save(order);
         cartService.clearCart();
 

@@ -128,7 +128,8 @@ public class DataSeeder implements CommandLineRunner {
         item.setOrder(order);
 
         // Simulate payment
-        order.markAsPaid();
+        order.markPaymentCreated("rzp_demo_order");
+        order.markPaymentSuccess("rzp_demo_payment", "demo_signature");
 
         orderRepository.save(order);
 
