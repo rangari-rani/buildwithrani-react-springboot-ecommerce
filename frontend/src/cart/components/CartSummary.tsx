@@ -22,26 +22,22 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
     0
   );
 
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
+const handleCheckout = async () => {
+  if (items.length === 0) return;
 
-    try {
-      const order = await placeOrder();
+  try {
+    const order = await placeOrder();
 
-      // ✅ sync frontend cart with backend
-      await refreshCart();
+    await refreshCart();
 
-      navigate("/order-success", {
-        state: {
-          orderId: order.orderId,
-          orderStatus: order.orderStatus,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to place order", error);
-      alert("Failed to place order. Please try again.");
-    }
-  };
+  
+    navigate(`/orders/${order.orderId}`);
+
+  } catch (error) {
+    console.error("Failed to place order", error);
+    alert("Failed to place order. Please try again.");
+  }
+};
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5 sticky top-24">

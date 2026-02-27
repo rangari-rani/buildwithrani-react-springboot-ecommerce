@@ -91,6 +91,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -111,12 +112,6 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            throw new UsernameNotFoundException("UserDetailsService disabled (JWT only)");
-        };
-    }
 }
 
 

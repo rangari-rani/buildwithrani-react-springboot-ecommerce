@@ -15,7 +15,7 @@ export interface OrderResponse {
   orderId: number;
   totalAmount: number;
   orderStatus: OrderStatus;
-  paymentStatus: "PENDING" | "PAID";
+  paymentStatus: "PENDING" | "CREATED" | "SUCCESS";
   createdAt: string;
   items: OrderItem[];
 }

@@ -4,6 +4,7 @@ import com.buildwithrani.backend.common.dto.ApiResponse;
 import com.buildwithrani.backend.payment.dto.CreatePaymentRequest;
 import com.buildwithrani.backend.payment.dto.VerifyPaymentRequest;
 import com.buildwithrani.backend.payment.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class PaymentController {
 
     @PostMapping("/create")
     public ApiResponse<String> createPayment(
-            @RequestBody CreatePaymentRequest request
+            @Valid @RequestBody CreatePaymentRequest request
     ) {
 
         String razorpayOrderId =
@@ -27,7 +28,7 @@ public class PaymentController {
 
     @PostMapping("/verify")
     public ApiResponse<Void> verifyPayment(
-            @RequestBody VerifyPaymentRequest request
+            @Valid @RequestBody VerifyPaymentRequest request
     ) {
 
         paymentService.verifyPayment(

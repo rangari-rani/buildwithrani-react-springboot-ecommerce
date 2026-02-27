@@ -74,6 +74,10 @@ public class Order {
 
     public void markPaymentSuccess(String paymentId, String signature) {
 
+        if (this.paymentStatus == PaymentStatus.SUCCESS) {
+            return; // prevent duplicate processing
+        }
+
         if (!orderStatus.canTransitionTo(OrderStatus.PAID)) {
             throw new InvalidStateException(
                     "Cannot mark order as PAID from state: " + orderStatus
@@ -87,6 +91,15 @@ public class Order {
     }
 
     public void markPaymentCreated(String razorpayOrderId) {
+
+        if (this.paymentStatus == PaymentStatus.SUCCESS) {
+            throw new InvalidStateException("Payment already completed for this order");
+        }
+
+        if (this.paymentStatus == PaymentStatus.CREATED) {
+            return; // idempotent protection
+        }
+
         this.paymentStatus = PaymentStatus.CREATED;
         this.razorpayOrderId = razorpayOrderId;
     }
@@ -101,9 +114,9 @@ public class Order {
     }
 
     public void cancelByUser() {
-        if (!(orderStatus == OrderStatus.CREATED || orderStatus == OrderStatus.PAID)) {
+        if (orderStatus != OrderStatus.CREATED) {
             throw new InvalidStateException(
-                    "Order cannot be cancelled in state: " + orderStatus
+                    "Only unpaid orders can be cancelled"
             );
         }
         this.orderStatus = OrderStatus.CANCELLED;
