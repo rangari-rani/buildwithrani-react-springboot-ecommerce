@@ -15,7 +15,7 @@ public enum OrderStatus {
     PAID {
         @Override
         public Set<OrderStatus> allowedNext() {
-            return EnumSet.of(PACKED, CANCELLED);
+            return EnumSet.of(PACKED);
         }
     },
 

@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
 
@@ -14,7 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -41,6 +40,8 @@ services:
     container_name: bwr-frontend
     ports:
       - "3000:80"
+    environment:
+      VITE_RAZORPAY_KEY: rzp_test_SL9oidq4fiKDlT
     depends_on:
       - backend
 

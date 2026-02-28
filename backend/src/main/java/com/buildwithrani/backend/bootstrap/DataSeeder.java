@@ -108,7 +108,26 @@ public class DataSeeder implements CommandLineRunner {
         User user = userRepository.findByEmail("user@demo.com").orElseThrow();
         Product candle = productRepository.findAll().get(0);
 
-        OrderItem item = OrderItem.builder()
+        OrderItem createdItem = OrderItem.builder()
+                .productId(candle.getId())
+                .productName(candle.getName())
+                .priceAtPurchase(candle.getPrice())
+                .quantity(1)
+                .totalPrice(candle.getPrice())
+                .build();
+
+        Order createdOrder = Order.create(
+                user,
+                createdItem.getTotalPrice(),
+                List.of(createdItem)
+        );
+
+        createdItem.setOrder(createdOrder);
+
+// DO NOT mark payment success here
+        orderRepository.save(createdOrder);
+
+        OrderItem paidItem = OrderItem.builder()
                 .productId(candle.getId())
                 .productName(candle.getName())
                 .priceAtPurchase(candle.getPrice())
@@ -116,22 +135,19 @@ public class DataSeeder implements CommandLineRunner {
                 .totalPrice(candle.getPrice().multiply(BigDecimal.valueOf(2)))
                 .build();
 
-        BigDecimal total = item.getTotalPrice();
-
-        Order order = Order.create(
+        Order paidOrder = Order.create(
                 user,
-                total,
-                List.of(item)
+                paidItem.getTotalPrice(),
+                List.of(paidItem)
         );
 
-        // Attach order reference to item (important)
-        item.setOrder(order);
+        paidItem.setOrder(paidOrder);
 
-        // Simulate payment
-        order.markPaymentCreated("rzp_demo_order");
-        order.markPaymentSuccess("rzp_demo_payment", "demo_signature");
+// Simulated successful payment (demo purpose only)
+        paidOrder.markPaymentCreated("rzp_demo_order");
+        paidOrder.markPaymentSuccess("rzp_demo_payment", "demo_signature");
 
-        orderRepository.save(order);
+        orderRepository.save(paidOrder);
 
         System.out.println("✅ Demo order created");
     }
