@@ -217,24 +217,20 @@ const OrderDetail: React.FC = () => {
           </button>
         )}
 
-        <button
-          disabled={!canCancel || cancelLoading}
-          onClick={handleCancelOrder}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            canCancel
-              ? "bg-red-600 text-white hover:bg-red-700"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed"
-          } ${cancelLoading ? "opacity-70 cursor-wait" : ""}`}
-        >
-          {cancelLoading ? "Cancelling..." : "Cancel Order"}
-        </button>
+    {canCancel && (
+  <button
+    onClick={handleCancelOrder}
+    disabled={cancelLoading}
+    className={`px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 ${
+      cancelLoading ? "opacity-70 cursor-wait" : ""
+    }`}
+  >
+    {cancelLoading ? "Cancelling..." : "Cancel Order"}
+  </button>
+)}
       </div>
 
-      {!canCancel && (
-        <p className="text-xs text-gray-400 text-right mt-1">
-          This order can no longer be cancelled.
-        </p>
-      )}
+    
 
       <Link
         to="/orders"
