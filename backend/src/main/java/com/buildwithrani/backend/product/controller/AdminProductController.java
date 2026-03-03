@@ -27,20 +27,26 @@ public class AdminProductController {
     // -------- CREATE PRODUCT --------
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponseDTO> createProduct(
-            @RequestPart("image") MultipartFile image,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") BigDecimal price,
-            @RequestParam(value = "featured", defaultValue = "false") boolean featured
+            @RequestParam(value = "discountPercentage", required = false) Integer discountPercentage,
+            @RequestParam(value = "featured", defaultValue = "false") boolean featured,
+            @RequestParam("stock") Integer stock
     ) {
+
         ProductRequestDTO dto = ProductRequestDTO.builder()
                 .name(name)
                 .description(description)
                 .price(price)
+                .discountPercentage(discountPercentage)
                 .featured(featured)
+                .stock(stock)
                 .build();
 
         ProductResponseDTO created = productService.createProduct(dto, image);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -71,6 +77,30 @@ public class AdminProductController {
                 productService.updateProduct(id, dto, image);
 
         return ResponseEntity.ok(updated);
+    }
+
+    @PatchMapping("/{id}/stock/increase")
+    public ResponseEntity<ApiResponse<Void>> increaseStock(
+            @PathVariable Long id,
+            @RequestParam int quantity
+    ) {
+        productService.increaseStock(id, quantity);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Stock increased successfully")
+        );
+    }
+
+    @PatchMapping("/{id}/stock/decrease")
+    public ResponseEntity<ApiResponse<Void>> decreaseStock(
+            @PathVariable Long id,
+            @RequestParam int quantity
+    ) {
+        productService.decreaseStock(id, quantity);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Stock decreased successfully")
+        );
     }
 
     // -------- GET ALL PRODUCTS (ADMIN) --------

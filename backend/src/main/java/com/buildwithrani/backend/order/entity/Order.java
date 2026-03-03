@@ -10,10 +10,17 @@ import com.buildwithrani.backend.common.exception.InvalidStateException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(
+        name = "orders",
+        indexes = {
+                @Index(name = "idx_orders_user", columnList = "user_id"),
+                @Index(name = "idx_orders_status", columnList = "order_status")
+        }
+)
 @Getter
 @NoArgsConstructor
 public class Order {
@@ -52,11 +59,14 @@ public class Order {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     /* =====================
        LIFECYCLE MANAGEMENT

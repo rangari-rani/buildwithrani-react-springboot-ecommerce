@@ -3,9 +3,12 @@ package com.buildwithrani.backend.payment.service;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
 import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.order.entity.Order;
+import com.buildwithrani.backend.order.entity.OrderItem;
 import com.buildwithrani.backend.order.enums.PaymentStatus;
 import com.buildwithrani.backend.order.repository.OrderRepository;
 import com.buildwithrani.backend.payment.gateway.PaymentGateway;
+import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentGateway paymentGateway;
+    private final ProductRepository productRepository;
 
     @Override
     public String createPayment(Long orderId) {
@@ -54,25 +58,32 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Idempotency guard
         if (order.getPaymentStatus() == PaymentStatus.SUCCESS) {
-            return; // Already verified, do nothing
+            return;
         }
 
-        // Security check: ensure order IDs match
         if (!razorpayOrderId.equals(order.getRazorpayOrderId())) {
             throw new InvalidStateException("Razorpay order ID mismatch");
         }
 
-        boolean verified =
-                paymentGateway.verifyPayment(
-                        razorpayOrderId,
-                        razorpayPaymentId,
-                        signature
-                );
+        boolean verified = paymentGateway.verifyPayment(
+                razorpayOrderId,
+                razorpayPaymentId,
+                signature
+        );
 
         if (!verified) {
             throw new InvalidStateException("Payment signature verification failed");
         }
 
+        // Reduce stock FIRST
+        for (OrderItem item : order.getOrderItems()) {
+
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+            product.reduceStock(item.getQuantity());
+        }
+
+        //  Then mark payment success
         order.markPaymentSuccess(razorpayPaymentId, signature);
-    }
-}
+    }}

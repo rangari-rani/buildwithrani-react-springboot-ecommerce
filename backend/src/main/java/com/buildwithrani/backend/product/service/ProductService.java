@@ -11,19 +11,26 @@ public interface ProductService {
 
     // -------- ADMIN --------
     ProductResponseDTO createProduct(ProductRequestDTO request, MultipartFile image);
+
     ProductResponseDTO updateProduct(Long id, ProductRequestDTO request, MultipartFile image);
-    List<ProductResponseDTO> getAllProducts();
-
-    // -------- USER -------------
-    List<ProductResponseDTO> getActiveProducts();
-
-    ProductResponseDTO getProductById(Long productId);
 
     void updateProductStatus(Long productId, ProductStatus status);
 
     void updateFeaturedStatus(Long productId, boolean isFeatured);
 
-    List<ProductResponseDTO> getFeaturedProducts();
-    List<ProductResponseDTO> getNewArrivals();
+    // -------- INVENTORY --------
+    void increaseStock(Long productId, int quantity);
 
+    void decreaseStock(Long productId, int quantity);
+
+    // -------- USER --------
+    List<ProductResponseDTO> getAllProducts();
+
+    List<ProductResponseDTO> getActiveProducts();
+
+    ProductResponseDTO getProductById(Long productId);
+
+    List<ProductResponseDTO> getFeaturedProducts();
+
+    List<ProductResponseDTO> getNewArrivals();
 }

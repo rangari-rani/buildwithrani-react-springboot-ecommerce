@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,6 +27,8 @@ public class ProductResponseDTO {
     private boolean featured;
 
     private ProductStatus status;
+
+    private Integer stock;
 
     private LocalDateTime createdAt;
 }

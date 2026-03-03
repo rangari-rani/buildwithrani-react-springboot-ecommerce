@@ -1,7 +1,11 @@
 package com.buildwithrani.backend.common.exception;
 
 import com.buildwithrani.backend.common.dto.ErrorResponse;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +18,9 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
@@ -54,12 +61,34 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", message, request);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntime(
-            RuntimeException ex,
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(
+            OptimisticLockException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", ex.getMessage(), request);
+        log.warn("Optimistic lock conflict at path: {}", request.getRequestURI());
+        return build(
+                HttpStatus.CONFLICT,
+                "CONCURRENT_MODIFICATION",
+                "Resource was modified by another transaction. Please retry.",
+                request
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        log.error("Database constraint violation", ex);
+
+        return build(
+                HttpStatus.CONFLICT,
+                "DATA_INTEGRITY_VIOLATION",
+                "Database constraint violation occurred.",
+                request
+        );
     }
 
     @ExceptionHandler(Exception.class)
@@ -67,7 +96,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ex.printStackTrace();
+        log.error("Unhandled exception occurred", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Something went wrong", request);
     }
 

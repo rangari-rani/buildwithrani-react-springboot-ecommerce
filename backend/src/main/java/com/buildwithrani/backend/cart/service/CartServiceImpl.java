@@ -9,6 +9,7 @@ import com.buildwithrani.backend.cart.dto.AddToCartRequest;
 import com.buildwithrani.backend.cart.dto.CartResponse;
 import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
 import com.buildwithrani.backend.cart.entity.Cart;
+import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.mapper.CartMapper;
 import com.buildwithrani.backend.cart.repository.CartRepository;
 import com.buildwithrani.backend.common.enums.ProductStatus;
@@ -30,7 +31,7 @@ public class CartServiceImpl implements CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
-    // REMOVED: auditService dependency is no longer needed here!
+
 
     @Override
     public CartResponse getCart() {
@@ -44,8 +45,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Audit(action = "CART_ITEM_ADDED", entityType = "CART") // The Aspect handles the logging
+    @Audit(action = "CART_ITEM_ADDED", entityType = "CART")
     public CartResponse addToCart(AddToCartRequest request) {
+
         Cart cart = getOrCreateCart();
 
         Product product = productRepository.findById(request.getProductId())
@@ -54,20 +56,45 @@ public class CartServiceImpl implements CartService {
         if (product.getStatus() != ProductStatus.ACTIVE) {
             throw new InvalidStateException("Product is not available for purchase");
         }
+        if (request.getQuantity() <= 0) {
+            throw new InvalidStateException("Quantity must be positive");
+        }
+
+        CartItem existingItem = cart.getItems().stream()
+                .filter(item -> item.getProduct().getId().equals(product.getId()))
+                .findFirst()
+                .orElse(null);
+
+        int existingQuantity = existingItem != null ? existingItem.getQuantity() : 0;
+
+        if (existingQuantity + request.getQuantity() > product.getStock()) {
+            throw new InvalidStateException("Insufficient stock");
+        }
 
         cart.addProduct(product, request.getQuantity());
+
         return cartMapper.toResponse(cart);
     }
 
     @Override
     @Audit(action = "CART_ITEM_UPDATED", entityType = "CART")
     public CartResponse updateCartItem(UpdateCartItemRequest request) {
+
         Cart cart = getOrCreateCart();
+
+        if (request.getQuantity() <= 0) {
+            throw new InvalidStateException("Quantity must be positive");
+        }
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        if (request.getQuantity() > product.getStock()) {
+            throw new InvalidStateException("Insufficient stock");
+        }
+
         cart.updateProductQuantity(product, request.getQuantity());
+
         return cartMapper.toResponse(cart);
     }
 

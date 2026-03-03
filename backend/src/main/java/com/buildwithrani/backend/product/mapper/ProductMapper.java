@@ -19,6 +19,7 @@ public class ProductMapper {
                 .imageUrl(product.getImageUrl())
                 .featured(product.isFeatured())
                 .status(product.getStatus())
+                .stock(product.getStock())
                 .createdAt(product.getCreatedAt())
                 .build();
     }

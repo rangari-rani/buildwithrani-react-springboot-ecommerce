@@ -45,12 +45,11 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
-            @PathVariable Long orderId
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal String email
     ) {
-        String userEmail = SecurityUtils.getCurrentUserEmail();
-
         OrderResponse response =
-                orderService.cancelOrder(orderId, userEmail);
+                orderService.cancelOrder(orderId, email);
 
         return ResponseEntity.ok(
                 ApiResponse.success(

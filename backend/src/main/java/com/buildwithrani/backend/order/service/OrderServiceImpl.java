@@ -10,6 +10,7 @@ import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.repository.CartItemRepository;
 import com.buildwithrani.backend.cart.service.CartService;
+import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.common.exception.AccessDeniedException;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
 import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
@@ -19,11 +20,14 @@ import com.buildwithrani.backend.order.entity.OrderItem;
 import com.buildwithrani.backend.order.enums.OrderStatus;
 import com.buildwithrani.backend.order.mapper.OrderMapper;
 import com.buildwithrani.backend.order.repository.OrderRepository;
+import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final ProductRepository productRepository;
 
     /* =====================
        USER ACTIONS
@@ -43,34 +48,60 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Audit(action = "ORDER_PLACED", entityType = "ORDER")
     public OrderResponse placeOrder(String email) {
-        User user = getCurrentUser();
+
+        User user = getUserByEmail(email);
         Cart cart = cartService.getCurrentUserCart();
 
         if (cart.getItems().isEmpty()) {
             throw new IllegalStateException("Cannot place order with empty cart");
         }
 
-        BigDecimal totalAmount = cart.getItems().stream()
-                .map(item -> item.getProduct().getPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<OrderItem> orderItems = new ArrayList<>();
 
-        List<OrderItem> orderItems = cart.getItems().stream()
-                .map(cartItem -> buildOrderItem(cartItem, null))
-                .toList();
+        for (CartItem cartItem : cart.getItems()) {
+
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+            if (product.getStatus() != ProductStatus.ACTIVE) {
+                throw new InvalidStateException("Product is not available for purchase");
+            }
+
+            int quantity = cartItem.getQuantity();
+            product.reduceStock(quantity);
+            BigDecimal itemTotal = product.getPrice()
+                    .multiply(BigDecimal.valueOf(quantity));
+
+            totalAmount = totalAmount.add(itemTotal);
+
+            OrderItem orderItem = OrderItem.builder()
+                    .productId(product.getId())
+                    .productName(product.getName())
+                    .priceAtPurchase(product.getPrice())
+                    .quantity(quantity)
+                    .totalPrice(itemTotal)
+                    .build();
+
+            orderItems.add(orderItem);
+        }
 
         Order order = Order.create(user, totalAmount, orderItems);
         orderItems.forEach(item -> item.setOrder(order));
 
-        Order savedOrder = orderRepository.save(order);
+        orderRepository.save(order);
+
         cartService.clearCart();
 
-        return OrderMapper.toOrderResponse(savedOrder);
+        return OrderMapper.toOrderResponse(order);
     }
 
+    /* =====================
+     cancel order
+     ===================== */
     @Override
     public OrderResponse cancelOrder(Long orderId, String email) {
-        User user = getCurrentUser();
+        User user = getUserByEmail(email);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -129,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getMyOrders(String email) {
-        User user = getCurrentUser();
+        User user = getUserByEmail(email);
         return orderRepository.findByUserWithItems(user)
                 .stream()
                 .map(OrderMapper::toOrderResponse)
@@ -138,7 +169,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderById(Long orderId, String email) {
-        User user = getCurrentUser();
+        User user = getUserByEmail(email);
         Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -174,10 +205,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private User getCurrentUser() {
-        String email = SecurityUtils.getCurrentUserEmail();
-        if (email == null) throw new AccessDeniedException("Unauthenticated access");
-
+    private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }

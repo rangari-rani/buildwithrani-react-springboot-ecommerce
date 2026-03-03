@@ -74,29 +74,35 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedProducts() {
 
-        Product candle = new Product();
-        candle.setName("Candle");
-        candle.setDescription("Demo scented candle");
-        candle.setPrice(new BigDecimal("300"));
-        candle.setFeatured(true);
-        candle.setStatus(ProductStatus.ACTIVE);
-        candle.setImageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768628114/products/lqogqmuv4hg2s7wfphqg.jpg");
+        Product candle = Product.builder()
+                .name("Candle")
+                .description("Demo scented candle")
+                .price(new BigDecimal("300"))
+                .featured(true)
+                .status(ProductStatus.ACTIVE)
+                .imageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768628114/products/lqogqmuv4hg2s7wfphqg.jpg")
+                .stock(50)
+                .build();
 
-        Product soap = new Product();
-        soap.setName("Handmade Soap");
-        soap.setDescription("Natural lavender soap");
-        soap.setPrice(new BigDecimal("150"));
-        soap.setFeatured(false);
-        soap.setStatus(ProductStatus.ACTIVE);
-        soap.setImageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301153/products/gbav4j4pi1dqm92put80.jpg");
+        Product soap = Product.builder()
+                .name("Handmade Soap")
+                .description("Natural lavender soap")
+                .price(new BigDecimal("150"))
+                .featured(false)
+                .status(ProductStatus.ACTIVE)
+                .imageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301153/products/gbav4j4pi1dqm92put80.jpg")
+                .stock(100)
+                .build();
 
-        Product diffuser = new Product();
-        diffuser.setName("Aroma Diffuser");
-        diffuser.setDescription("Essential oil diffuser");
-        diffuser.setPrice(new BigDecimal("1200"));
-        diffuser.setFeatured(true);
-        diffuser.setStatus(ProductStatus.ACTIVE);
-        diffuser.setImageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301338/products/h3azzt1s8rse6dcdlw0p.jpg");
+        Product diffuser = Product.builder()
+                .name("Aroma Diffuser")
+                .description("Essential oil diffuser")
+                .price(new BigDecimal("1200"))
+                .featured(true)
+                .status(ProductStatus.ACTIVE)
+                .imageUrl("https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301338/products/h3azzt1s8rse6dcdlw0p.jpg")
+                .stock(25)
+                .build();
 
         productRepository.saveAll(List.of(candle, soap, diffuser));
 
@@ -108,6 +114,7 @@ public class DataSeeder implements CommandLineRunner {
         User user = userRepository.findByEmail("user@demo.com").orElseThrow();
         Product candle = productRepository.findAll().get(0);
 
+        // CREATED ORDER
         OrderItem createdItem = OrderItem.builder()
                 .productId(candle.getId())
                 .productName(candle.getName())
@@ -124,8 +131,10 @@ public class DataSeeder implements CommandLineRunner {
 
         createdItem.setOrder(createdOrder);
 
-// DO NOT mark payment success here
         orderRepository.save(createdOrder);
+
+        // PAID ORDER
+        candle.reduceStock(2); // reflect inventory change
 
         OrderItem paidItem = OrderItem.builder()
                 .productId(candle.getId())
@@ -143,7 +152,6 @@ public class DataSeeder implements CommandLineRunner {
 
         paidItem.setOrder(paidOrder);
 
-// Simulated successful payment (demo purpose only)
         paidOrder.markPaymentCreated("rzp_demo_order");
         paidOrder.markPaymentSuccess("rzp_demo_payment", "demo_signature");
 

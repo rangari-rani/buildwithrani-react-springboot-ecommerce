@@ -39,15 +39,14 @@ public class Cart {
     }
 
     public void addProduct(Product product, int quantity) {
-        CartItem item = findItem(product)
-                .orElseGet(() -> {
-                    CartItem newItem = new CartItem(this, product, quantity);
-                    items.add(newItem);
-                    return newItem;
-                });
 
-        if (item.getId() != null) {
-            item.increaseQuantity(quantity);
+        Optional<CartItem> existingItem = findItem(product);
+
+        if (existingItem.isPresent()) {
+            existingItem.get().increaseQuantity(quantity);
+        } else {
+            CartItem newItem = new CartItem(this, product, quantity);
+            items.add(newItem);
         }
     }
 
