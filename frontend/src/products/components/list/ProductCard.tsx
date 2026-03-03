@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { isAuthenticated } = useAuth();
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const {
     id,
@@ -22,10 +22,11 @@ const navigate = useNavigate();
     name,
     price,
     discountPercentage,
+    stock,
   } = product;
 
-const { addItem } = useCart();
-
+  const { addItem } = useCart();
+  const isOutOfStock = stock <= 0;
   const hasDiscount =
     discountPercentage !== undefined && discountPercentage > 0;
 
@@ -33,18 +34,23 @@ const { addItem } = useCart();
     ? Math.round(price - (price * discountPercentage) / 100)
     : price;
 
-    const handleQuickAdd = async () => {
-  if (!isAuthenticated) {
-    toast.error("Please login to add items to cart");
-    navigate("/login", {
-      state: { redirectTo: "/cart" },
-    });
-    return;
-  }
+  const handleQuickAdd = async () => {
+    if (isOutOfStock) {
+      toast.error("Product is out of stock");
+      return;
+    }
 
-  await addItem(product.id, 1);
-  toast.success("Item added to cart");
-};
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart");
+      navigate("/login", {
+        state: { redirectTo: "/cart" },
+      });
+      return;
+    }
+
+    await addItem(product.id, 1);
+    toast.success("Item added to cart");
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 hover:shadow-sm transition">
@@ -82,7 +88,7 @@ const { addItem } = useCart();
           </h3>
         </Link>
 
-       {typeof product.averageRating === "number" && (
+        {typeof product.averageRating === "number" && (
           <div className="mb-2 flex items-center gap-1">
             <RatingStars rating={product.averageRating} />
             <span className="text-xs text-gray-500">
@@ -106,25 +112,38 @@ const { addItem } = useCart();
             )}
           </div>
 
+
           {/* Add to cart */}
           <button
-            className="
-              w-9 h-9
-              flex items-center justify-center
-              rounded-full
-              border border-gray-300
-              text-gray-600
-              hover:bg-gray-100
-              transition
-              cursor-pointer
-            "
+            disabled={isOutOfStock}
+            className={`
+    w-9 h-9
+    flex items-center justify-center
+    rounded-full
+    border
+    transition
+    ${isOutOfStock
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"}
+  `}
             onClick={handleQuickAdd}
-            title="Add to cart"
+            title={isOutOfStock ? "Out of stock" : "Add to cart"}
           >
             <FiShoppingCart size={16} />
           </button>
 
         </div>
+        {isOutOfStock && (
+          <p className="text-xs text-red-500 mt-2">
+            Out of stock
+          </p>
+        )}
+
+        {stock > 0 && stock <= 5 && (
+          <p className="text-xs text-orange-500 mt-2">
+            Only {stock} left
+          </p>
+        )}
       </div>
     </div>
   );

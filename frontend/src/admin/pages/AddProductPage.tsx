@@ -24,7 +24,7 @@ const handleSubmit = async (data: ProductFormData) => {
     }
 
     formData.append("featured", String(data.featured));
-
+formData.append("stock", String(data.stock));
     if (data.image) {
       formData.append("image", data.image);
     }

@@ -6,6 +6,7 @@ export interface CreateProductPayload {
   price: number;
   discountPercentage?: number;
   featured: boolean;
+   stock: number;
 }
 
 // CREATE PRODUCT
@@ -57,5 +58,27 @@ export const updateFeaturedStatus = async (
     {
       params: { featured },
     }
+  );
+};
+
+export const increaseStock = async (
+  productId: number,
+  quantity: number
+) => {
+  await axiosInstance.patch(
+    `/admin/products/${productId}/stock/increase`,
+    null,
+    { params: { quantity } }
+  );
+};
+
+export const decreaseStock = async (
+  productId: number,
+  quantity: number
+) => {
+  await axiosInstance.patch(
+    `/admin/products/${productId}/stock/decrease`,
+    null,
+    { params: { quantity } }
   );
 };

@@ -13,6 +13,7 @@ export interface ProductFormData {
   price: number;
   discountPercentage?: number;
   featured: boolean;
+   stock: number;
   image?: File | null;
 }
 
@@ -36,7 +37,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [preview, setPreview] = useState<string | null>(
     initialData?.imageUrl ?? null
   );
-
+const [stock, setStock] = useState<number>(initialData?.stock ?? 0);
   useEffect(() => {
     if (!initialData) return;
 
@@ -45,6 +46,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setPrice(initialData.price ?? 0);
     setDiscountPercentage(initialData.discountPercentage ?? 0);
     setIsFeatured(initialData.featured ?? false);
+    setStock(initialData.stock ?? 1);
   }, [initialData]);
 
   useEffect(() => {
@@ -66,6 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         discountPercentage > 0 ? discountPercentage : undefined,
       featured: isFeatured,
       image,
+        stock
     });
   };
 
@@ -125,7 +128,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
           />
         </div>
 
-
+{/* Stock */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Stock
+  </label>
+  <input
+    type="number"
+    min={0}
+    value={stock}
+    onChange={(e) => setStock(Number(e.target.value))}
+    required
+    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
+  />
+</div>
         {/* Discount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

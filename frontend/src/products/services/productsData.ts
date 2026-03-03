@@ -15,4 +15,5 @@ export interface Product {
   averageRating?: number;
 
   createdAt?: string;
+  stock: number;
 }

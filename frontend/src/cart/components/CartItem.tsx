@@ -8,10 +8,11 @@ interface CartItemProps {
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
-  const { productId, name, imageUrl, price, quantity } = item;
+  const { productId, name, imageUrl, price, quantity, stock } = item;
   const { updateItem, removeItem } = useCart();
 
   const increment = () => {
+    if (quantity >= stock) return;
     updateItem(productId, quantity + 1);
   };
 
@@ -78,19 +79,33 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
               {quantity}
             </div>
 
+
             <button
               onClick={increment}
-              className="
-                w-8 h-8
-                flex items-center justify-center
-                text-gray-600
-                hover:bg-gray-100
-                transition
-              "
+              disabled={quantity >= stock}
+              className={`
+    w-8 h-8 flex items-center justify-center transition
+    ${quantity >= stock
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-100"
+                }
+  `}
             >
               <FiPlus size={12} />
             </button>
           </div>
+          {stock > 0 && stock <= 5 && (
+            <p className="text-xs text-orange-500 mt-1">
+              Only {stock} left
+            </p>
+          )}
+
+          {stock === 0 && (
+            <p className="text-xs text-red-500 mt-1">
+              Out of stock
+            </p>
+          )}
+
         </div>
       </div>
     </div>

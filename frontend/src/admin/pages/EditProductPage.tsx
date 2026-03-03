@@ -52,8 +52,8 @@ const handleSubmit = async (data: ProductFormData) => {
     }
 
     formData.append("featured", String(data.featured));
+formData.append("stock", String(data.stock));
 
-    // ✅ ONLY append image if a new one is selected
     if (data.image) {
       formData.append("image", data.image);
     }
