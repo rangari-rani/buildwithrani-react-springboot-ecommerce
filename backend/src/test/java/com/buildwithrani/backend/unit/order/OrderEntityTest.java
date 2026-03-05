@@ -1,7 +1,8 @@
-package com.buildwithrani.backend.order.entity;
+package com.buildwithrani.backend.unit.order;
 
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.order.entity.Order;
 import com.buildwithrani.backend.order.enums.OrderStatus;
 import com.buildwithrani.backend.order.enums.PaymentStatus;
 import org.junit.jupiter.api.Test;
@@ -150,3 +151,4 @@ public class OrderEntityTest {
         return order;
     }
 }
+

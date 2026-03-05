@@ -1,4 +1,4 @@
-package com.buildwithrani.backend.payment.service;
+package com.buildwithrani.backend.unit.payment;
 
 import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
@@ -8,6 +8,7 @@ import com.buildwithrani.backend.order.entity.OrderItem;
 import com.buildwithrani.backend.order.enums.PaymentStatus;
 import com.buildwithrani.backend.order.repository.OrderRepository;
 import com.buildwithrani.backend.payment.gateway.PaymentGateway;
+import com.buildwithrani.backend.payment.service.PaymentServiceImpl;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentServiceImplTest {
+class PaymentServiceTest {
 
     @Mock private OrderRepository orderRepository;
     @Mock private PaymentGateway paymentGateway;

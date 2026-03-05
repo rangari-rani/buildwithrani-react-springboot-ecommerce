@@ -1,4 +1,4 @@
-package com.buildwithrani.backend.auth.service;
+package com.buildwithrani.backend.unit.auth;
 
 import com.buildwithrani.backend.auth.dto.AuthResponse;
 import com.buildwithrani.backend.auth.dto.LoginRequest;
@@ -7,6 +7,7 @@ import com.buildwithrani.backend.auth.model.Role;
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.auth.repository.UserRepository;
 import com.buildwithrani.backend.auth.security.JwtUtil;
+import com.buildwithrani.backend.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

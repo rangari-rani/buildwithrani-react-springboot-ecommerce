@@ -1,10 +1,11 @@
-package com.buildwithrani.backend.order.mapper;
+package com.buildwithrani.backend.unit.order;
 
 import com.buildwithrani.backend.auth.model.User;
 import com.buildwithrani.backend.order.dto.OrderItemResponse;
 import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.entity.Order;
 import com.buildwithrani.backend.order.entity.OrderItem;
+import com.buildwithrani.backend.order.mapper.OrderMapper;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

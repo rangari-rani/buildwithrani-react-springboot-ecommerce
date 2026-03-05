@@ -1,4 +1,4 @@
-package com.buildwithrani.backend.product.service;
+package com.buildwithrani.backend.unit.product;
 
 import com.buildwithrani.backend.audit.service.AuditService;
 import com.buildwithrani.backend.auth.repository.UserRepository;
@@ -11,6 +11,7 @@ import com.buildwithrani.backend.product.dto.ProductResponseDTO;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.mapper.ProductMapper;
 import com.buildwithrani.backend.product.repository.ProductRepository;
+import com.buildwithrani.backend.product.service.ProductServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest {
+class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;

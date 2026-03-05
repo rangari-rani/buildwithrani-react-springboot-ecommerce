@@ -1,7 +1,8 @@
-package com.buildwithrani.backend.product.entity;
+package com.buildwithrani.backend.unit.product;
 
 import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.product.entity.Product;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -93,3 +94,4 @@ public class ProductEntityTest {
                 .build();
     }
 }
+

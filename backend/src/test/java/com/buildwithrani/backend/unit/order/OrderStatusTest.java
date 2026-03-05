@@ -1,5 +1,6 @@
-package com.buildwithrani.backend.order.enums;
+package com.buildwithrani.backend.unit.order;
 
+import com.buildwithrani.backend.order.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,4 +26,5 @@ public class OrderStatusTest {
         assertFalse(OrderStatus.PAID.isTerminal());
     }
 }
+
 

@@ -1,4 +1,4 @@
-package com.buildwithrani.backend.order.service;
+package com.buildwithrani.backend.unit.order;
 
 import com.buildwithrani.backend.audit.enums.ActorRole;
 import com.buildwithrani.backend.audit.service.AuditService;
@@ -15,6 +15,7 @@ import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.entity.Order;
 import com.buildwithrani.backend.order.enums.OrderStatus;
 import com.buildwithrani.backend.order.repository.OrderRepository;
+import com.buildwithrani.backend.order.service.OrderServiceImpl;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import com.buildwithrani.backend.auth.security.SecurityUtils;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OrderServiceImplTest {
+class OrderServiceTest {
 
     @Mock private OrderRepository orderRepository;
     @Mock private CartService cartService;

@@ -1,6 +1,7 @@
-package com.buildwithrani.backend.cart.entity;
+package com.buildwithrani.backend.unit.cart;
 
 import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
 import com.buildwithrani.backend.product.entity.Product;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CartTest {
+class CartEntityTest {
 
     private User user = new User();
 

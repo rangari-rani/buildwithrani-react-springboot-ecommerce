@@ -1,5 +1,4 @@
-package com.buildwithrani.backend.order.controller;
-
+package com.buildwithrani.backend.integration.order;
 
 import com.buildwithrani.backend.order.dto.OrderResponse;
 import com.buildwithrani.backend.order.service.OrderService;

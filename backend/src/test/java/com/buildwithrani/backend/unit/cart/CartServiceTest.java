@@ -1,4 +1,4 @@
-package com.buildwithrani.backend.cart.service;
+package com.buildwithrani.backend.unit.cart;
 
 import com.buildwithrani.backend.cart.dto.AddToCartRequest;
 import com.buildwithrani.backend.cart.dto.CartResponse;
@@ -7,6 +7,7 @@ import com.buildwithrani.backend.cart.entity.Cart;
 import com.buildwithrani.backend.cart.entity.CartItem;
 import com.buildwithrani.backend.cart.mapper.CartMapper;
 import com.buildwithrani.backend.cart.repository.CartRepository;
+import com.buildwithrani.backend.cart.service.CartServiceImpl;
 import com.buildwithrani.backend.common.enums.ProductStatus;
 import com.buildwithrani.backend.common.exception.InvalidStateException;
 import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CartServiceImplTest {
+class CartServiceTest {
 
     @Mock private CartRepository cartRepository;
     @Mock private ProductRepository productRepository;
