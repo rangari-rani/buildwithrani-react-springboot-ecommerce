@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.order.service</a> &gt; <span class="el_source">OrderServiceImpl.java</span></div><h1>OrderServiceImpl.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.order.service;
+
+import com.buildwithrani.backend.audit.entity.Audit;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.auth.security.SecurityUtils;
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
+import com.buildwithrani.backend.cart.entity.Cart;
+import com.buildwithrani.backend.cart.entity.CartItem;
+import com.buildwithrani.backend.cart.repository.CartItemRepository;
+import com.buildwithrani.backend.cart.service.CartService;
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.AccessDeniedException;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
+import com.buildwithrani.backend.order.dto.OrderResponse;
+import com.buildwithrani.backend.order.entity.Order;
+import com.buildwithrani.backend.order.entity.OrderItem;
+import com.buildwithrani.backend.order.enums.OrderStatus;
+import com.buildwithrani.backend.order.mapper.OrderMapper;
+import com.buildwithrani.backend.order.repository.OrderRepository;
+import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class OrderServiceImpl implements OrderService {
+
+    private final OrderRepository orderRepository;
+    private final CartService cartService;
+    private final UserRepository userRepository;
+    private final AuditService auditService;
+    private final ProductRepository productRepository;
+
+    /* =====================
+       USER ACTIONS
+       ===================== */
+
+    @Override
+    @Audit(action = &quot;ORDER_PLACED&quot;, entityType = &quot;ORDER&quot;)
+    public OrderResponse placeOrder(String email) {
+
+<span class="fc" id="L52">        User user = getUserByEmail(email);</span>
+<span class="fc" id="L53">        Cart cart = cartService.getCurrentUserCart();</span>
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (cart.getItems().isEmpty()) {</span>
+<span class="fc" id="L56">            throw new IllegalStateException(&quot;Cannot place order with empty cart&quot;);</span>
+        }
+
+<span class="fc" id="L59">        BigDecimal totalAmount = BigDecimal.ZERO;</span>
+<span class="fc" id="L60">        List&lt;OrderItem&gt; orderItems = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (CartItem cartItem : cart.getItems()) {</span>
+
+<span class="fc" id="L64">            Product product = productRepository.findById(cartItem.getProduct().getId())</span>
+<span class="fc" id="L65">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found&quot;));</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (product.getStatus() != ProductStatus.ACTIVE) {</span>
+<span class="fc" id="L68">                throw new InvalidStateException(&quot;Product is not available for purchase&quot;);</span>
+            }
+
+<span class="fc" id="L71">            int quantity = cartItem.getQuantity();</span>
+<span class="fc" id="L72">            product.reduceStock(quantity);</span>
+<span class="fc" id="L73">            BigDecimal itemTotal = product.getPrice()</span>
+<span class="fc" id="L74">                    .multiply(BigDecimal.valueOf(quantity));</span>
+
+<span class="fc" id="L76">            totalAmount = totalAmount.add(itemTotal);</span>
+
+<span class="fc" id="L78">            OrderItem orderItem = OrderItem.builder()</span>
+<span class="fc" id="L79">                    .productId(product.getId())</span>
+<span class="fc" id="L80">                    .productName(product.getName())</span>
+<span class="fc" id="L81">                    .priceAtPurchase(product.getPrice())</span>
+<span class="fc" id="L82">                    .quantity(quantity)</span>
+<span class="fc" id="L83">                    .totalPrice(itemTotal)</span>
+<span class="fc" id="L84">                    .build();</span>
+
+<span class="fc" id="L86">            orderItems.add(orderItem);</span>
+<span class="fc" id="L87">        }</span>
+
+<span class="fc" id="L89">        Order order = Order.create(user, totalAmount, orderItems);</span>
+<span class="fc" id="L90">        orderItems.forEach(item -&gt; item.setOrder(order));</span>
+
+<span class="fc" id="L92">        orderRepository.save(order);</span>
+
+<span class="fc" id="L94">        cartService.clearCart();</span>
+
+<span class="fc" id="L96">        return OrderMapper.toOrderResponse(order);</span>
+    }
+
+    /* =====================
+     cancel order
+     ===================== */
+    @Override
+    public OrderResponse cancelOrder(Long orderId, String email) {
+<span class="fc" id="L104">        User user = getUserByEmail(email);</span>
+<span class="fc" id="L105">        Order order = orderRepository.findById(orderId)</span>
+<span class="fc" id="L106">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Order not found&quot;));</span>
+
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (!order.getUser().getId().equals(user.getId())) {</span>
+<span class="fc" id="L109">            throw new AccessDeniedException(&quot;You are not allowed to access this order&quot;);</span>
+        }
+
+<span class="fc" id="L112">        OrderStatus previousStatus = order.getOrderStatus();</span>
+<span class="fc" id="L113">        order.cancelByUser();</span>
+
+        // Professional logging: Keep action clean, put details in metadata
+<span class="fc" id="L116">        String metadata = String.format(&quot;{\&quot;from_status\&quot;:\&quot;%s\&quot;, \&quot;to_status\&quot;:\&quot;CANCELLED\&quot;}&quot;, previousStatus);</span>
+
+<span class="fc" id="L118">        auditService.logAction(</span>
+<span class="fc" id="L119">                user.getId(),</span>
+                ActorRole.USER,
+                &quot;ORDER_CANCELLED&quot;,
+                &quot;ORDER&quot;,
+<span class="fc" id="L123">                order.getId(),</span>
+                metadata // 6th argument added
+        );
+
+<span class="fc" id="L127">        return OrderMapper.toOrderResponse(order);</span>
+    }
+
+    /* =====================
+       ADMIN ACTIONS
+       ===================== */
+
+    @Override
+    public OrderResponse advanceOrderStatus(Long orderId, OrderStatus nextStatus) {
+<span class="fc" id="L136">        Order order = orderRepository.findById(orderId)</span>
+<span class="pc" id="L137">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Order not found&quot;));</span>
+
+<span class="fc" id="L139">        OrderStatus previousStatus = order.getOrderStatus();</span>
+<span class="fc" id="L140">        order.advanceByAdmin(nextStatus);</span>
+
+<span class="fc" id="L142">        String adminEmail = SecurityUtils.getCurrentUserEmail();</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        Long adminId = (adminEmail != null) ?</span>
+<span class="pc" id="L144">                userRepository.findByEmail(adminEmail).map(User::getId).orElse(null) : null;</span>
+
+        // Structured metadata for easier auditing
+<span class="fc" id="L147">        String metadata = String.format(&quot;{\&quot;transition\&quot;:\&quot;%s_TO_%s\&quot;}&quot;, previousStatus, nextStatus);</span>
+
+<span class="fc" id="L149">        auditService.logAction(</span>
+                adminId,
+                ActorRole.ADMIN,
+                &quot;ORDER_STATUS_CHANGED&quot;,
+                &quot;ORDER&quot;,
+<span class="fc" id="L154">                order.getId(),</span>
+                metadata // 6th argument added
+        );
+
+<span class="fc" id="L158">        return OrderMapper.toOrderResponse(order);</span>
+    }
+
+    @Override
+    public List&lt;OrderResponse&gt; getMyOrders(String email) {
+<span class="fc" id="L163">        User user = getUserByEmail(email);</span>
+<span class="fc" id="L164">        return orderRepository.findByUserWithItems(user)</span>
+<span class="fc" id="L165">                .stream()</span>
+<span class="fc" id="L166">                .map(OrderMapper::toOrderResponse)</span>
+<span class="fc" id="L167">                .toList();</span>
+    }
+
+    @Override
+    public OrderResponse getOrderById(Long orderId, String email) {
+<span class="fc" id="L172">        User user = getUserByEmail(email);</span>
+<span class="fc" id="L173">        Order order = orderRepository.findByIdWithItems(orderId)</span>
+<span class="pc" id="L174">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Order not found&quot;));</span>
+
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        if (!order.getUser().getId().equals(user.getId())) {</span>
+<span class="fc" id="L177">            throw new AccessDeniedException(&quot;Access denied&quot;);</span>
+        }
+<span class="fc" id="L179">        return OrderMapper.toOrderResponse(order);</span>
+    }
+
+    @Override
+    public List&lt;OrderResponse&gt; getAllOrders() {
+<span class="fc" id="L184">        return orderRepository.findAllWithItems()</span>
+<span class="fc" id="L185">                .stream()</span>
+<span class="fc" id="L186">                .map(OrderMapper::toOrderResponse)</span>
+<span class="fc" id="L187">                .toList();</span>
+    }
+
+    /* =====================
+       HELPERS
+       ===================== */
+
+    private OrderItem buildOrderItem(CartItem cartItem, Order order) {
+<span class="nc" id="L195">        BigDecimal priceAtPurchase = cartItem.getProduct().getPrice();</span>
+<span class="nc" id="L196">        Integer quantity = cartItem.getQuantity();</span>
+
+<span class="nc" id="L198">        return OrderItem.builder()</span>
+<span class="nc" id="L199">                .order(order)</span>
+<span class="nc" id="L200">                .productId(cartItem.getProduct().getId())</span>
+<span class="nc" id="L201">                .productName(cartItem.getProduct().getName())</span>
+<span class="nc" id="L202">                .priceAtPurchase(priceAtPurchase)</span>
+<span class="nc" id="L203">                .quantity(quantity)</span>
+<span class="nc" id="L204">                .totalPrice(priceAtPurchase.multiply(BigDecimal.valueOf(quantity)))</span>
+<span class="nc" id="L205">                .build();</span>
+    }
+
+    private User getUserByEmail(String email) {
+<span class="fc" id="L209">        return userRepository.findByEmail(email)</span>
+<span class="fc" id="L210">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;User not found&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

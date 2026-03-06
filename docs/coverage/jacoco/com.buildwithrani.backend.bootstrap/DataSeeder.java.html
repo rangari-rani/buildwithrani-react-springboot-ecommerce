@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataSeeder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.bootstrap</a> &gt; <span class="el_source">DataSeeder.java</span></div><h1>DataSeeder.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.bootstrap;
+
+import com.buildwithrani.backend.auth.model.Role;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.order.entity.Order;
+import com.buildwithrani.backend.order.entity.OrderItem;
+import com.buildwithrani.backend.order.enums.OrderStatus;
+import com.buildwithrani.backend.order.enums.PaymentStatus;
+import com.buildwithrani.backend.order.repository.OrderRepository;
+import com.buildwithrani.backend.product.entity.Product;
+
+import com.buildwithrani.backend.product.repository.ProductRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Component
+public class DataSeeder implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public DataSeeder(UserRepository userRepository,
+                      ProductRepository productRepository,
+                      OrderRepository orderRepository,
+<span class="fc" id="L33">                      PasswordEncoder passwordEncoder) {</span>
+<span class="fc" id="L34">        this.userRepository = userRepository;</span>
+<span class="fc" id="L35">        this.productRepository = productRepository;</span>
+<span class="fc" id="L36">        this.orderRepository = orderRepository;</span>
+<span class="fc" id="L37">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    public void run(String... args) {
+
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (userRepository.count() == 0) {</span>
+<span class="nc" id="L44">            seedUsers();</span>
+        }
+
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (productRepository.count() == 0) {</span>
+<span class="nc" id="L48">            seedProducts();</span>
+        }
+
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (orderRepository.count() == 0) {</span>
+<span class="nc" id="L52">            seedOrder();</span>
+        }
+<span class="fc" id="L54">    }</span>
+
+    private void seedUsers() {
+
+<span class="nc" id="L58">        User admin = new User();</span>
+<span class="nc" id="L59">        admin.setFullName(&quot;Demo Admin&quot;);</span>
+<span class="nc" id="L60">        admin.setEmail(&quot;admin@demo.com&quot;);</span>
+<span class="nc" id="L61">        admin.setPassword(passwordEncoder.encode(&quot;Password123!&quot;));</span>
+<span class="nc" id="L62">        admin.setRole(Role.ADMIN);</span>
+
+<span class="nc" id="L64">        User user = new User();</span>
+<span class="nc" id="L65">        user.setFullName(&quot;Demo User&quot;);</span>
+<span class="nc" id="L66">        user.setEmail(&quot;user@demo.com&quot;);</span>
+<span class="nc" id="L67">        user.setPassword(passwordEncoder.encode(&quot;Password123!&quot;));</span>
+<span class="nc" id="L68">        user.setRole(Role.USER);</span>
+
+<span class="nc" id="L70">        userRepository.saveAll(List.of(admin, user));</span>
+
+<span class="nc" id="L72">        System.out.println(&quot;✅ Demo users created&quot;);</span>
+<span class="nc" id="L73">    }</span>
+
+    private void seedProducts() {
+
+<span class="nc" id="L77">        Product candle = Product.builder()</span>
+<span class="nc" id="L78">                .name(&quot;Candle&quot;)</span>
+<span class="nc" id="L79">                .description(&quot;Demo scented candle&quot;)</span>
+<span class="nc" id="L80">                .price(new BigDecimal(&quot;300&quot;))</span>
+<span class="nc" id="L81">                .featured(true)</span>
+<span class="nc" id="L82">                .status(ProductStatus.ACTIVE)</span>
+<span class="nc" id="L83">                .imageUrl(&quot;https://res.cloudinary.com/dgqjia7ca/image/upload/v1768628114/products/lqogqmuv4hg2s7wfphqg.jpg&quot;)</span>
+<span class="nc" id="L84">                .stock(50)</span>
+<span class="nc" id="L85">                .build();</span>
+
+<span class="nc" id="L87">        Product soap = Product.builder()</span>
+<span class="nc" id="L88">                .name(&quot;Handmade Soap&quot;)</span>
+<span class="nc" id="L89">                .description(&quot;Natural lavender soap&quot;)</span>
+<span class="nc" id="L90">                .price(new BigDecimal(&quot;150&quot;))</span>
+<span class="nc" id="L91">                .featured(false)</span>
+<span class="nc" id="L92">                .status(ProductStatus.ACTIVE)</span>
+<span class="nc" id="L93">                .imageUrl(&quot;https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301153/products/gbav4j4pi1dqm92put80.jpg&quot;)</span>
+<span class="nc" id="L94">                .stock(100)</span>
+<span class="nc" id="L95">                .build();</span>
+
+<span class="nc" id="L97">        Product diffuser = Product.builder()</span>
+<span class="nc" id="L98">                .name(&quot;Aroma Diffuser&quot;)</span>
+<span class="nc" id="L99">                .description(&quot;Essential oil diffuser&quot;)</span>
+<span class="nc" id="L100">                .price(new BigDecimal(&quot;1200&quot;))</span>
+<span class="nc" id="L101">                .featured(true)</span>
+<span class="nc" id="L102">                .status(ProductStatus.ACTIVE)</span>
+<span class="nc" id="L103">                .imageUrl(&quot;https://res.cloudinary.com/dgqjia7ca/image/upload/v1768301338/products/h3azzt1s8rse6dcdlw0p.jpg&quot;)</span>
+<span class="nc" id="L104">                .stock(25)</span>
+<span class="nc" id="L105">                .build();</span>
+
+<span class="nc" id="L107">        productRepository.saveAll(List.of(candle, soap, diffuser));</span>
+
+<span class="nc" id="L109">        System.out.println(&quot;✅ Demo products created&quot;);</span>
+<span class="nc" id="L110">    }</span>
+
+    private void seedOrder() {
+
+<span class="nc" id="L114">        User user = userRepository.findByEmail(&quot;user@demo.com&quot;).orElseThrow();</span>
+<span class="nc" id="L115">        Product candle = productRepository.findAll().get(0);</span>
+
+        // CREATED ORDER
+<span class="nc" id="L118">        OrderItem createdItem = OrderItem.builder()</span>
+<span class="nc" id="L119">                .productId(candle.getId())</span>
+<span class="nc" id="L120">                .productName(candle.getName())</span>
+<span class="nc" id="L121">                .priceAtPurchase(candle.getPrice())</span>
+<span class="nc" id="L122">                .quantity(1)</span>
+<span class="nc" id="L123">                .totalPrice(candle.getPrice())</span>
+<span class="nc" id="L124">                .build();</span>
+
+<span class="nc" id="L126">        Order createdOrder = Order.create(</span>
+                user,
+<span class="nc" id="L128">                createdItem.getTotalPrice(),</span>
+<span class="nc" id="L129">                List.of(createdItem)</span>
+        );
+
+<span class="nc" id="L132">        createdItem.setOrder(createdOrder);</span>
+
+<span class="nc" id="L134">        orderRepository.save(createdOrder);</span>
+
+        // PAID ORDER
+<span class="nc" id="L137">        candle.reduceStock(2); // reflect inventory change</span>
+
+<span class="nc" id="L139">        OrderItem paidItem = OrderItem.builder()</span>
+<span class="nc" id="L140">                .productId(candle.getId())</span>
+<span class="nc" id="L141">                .productName(candle.getName())</span>
+<span class="nc" id="L142">                .priceAtPurchase(candle.getPrice())</span>
+<span class="nc" id="L143">                .quantity(2)</span>
+<span class="nc" id="L144">                .totalPrice(candle.getPrice().multiply(BigDecimal.valueOf(2)))</span>
+<span class="nc" id="L145">                .build();</span>
+
+<span class="nc" id="L147">        Order paidOrder = Order.create(</span>
+                user,
+<span class="nc" id="L149">                paidItem.getTotalPrice(),</span>
+<span class="nc" id="L150">                List.of(paidItem)</span>
+        );
+
+<span class="nc" id="L153">        paidItem.setOrder(paidOrder);</span>
+
+<span class="nc" id="L155">        paidOrder.markPaymentCreated(&quot;rzp_demo_order&quot;);</span>
+<span class="nc" id="L156">        paidOrder.markPaymentSuccess(&quot;rzp_demo_payment&quot;, &quot;demo_signature&quot;);</span>
+
+<span class="nc" id="L158">        orderRepository.save(paidOrder);</span>
+
+<span class="nc" id="L160">        System.out.println(&quot;✅ Demo order created&quot;);</span>
+<span class="nc" id="L161">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

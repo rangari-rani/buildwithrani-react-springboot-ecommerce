@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Product.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.product.entity</a> &gt; <span class="el_source">Product.java</span></div><h1>Product.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.product.entity;
+
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(
+        name = &quot;products&quot;,
+        indexes = {
+                @Index(name = &quot;idx_product_status&quot;, columnList = &quot;status&quot;)
+        }
+)
+@Getter
+@NoArgsConstructor
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, length = 2000)
+    private String description;
+
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    private Integer discountPercentage;
+
+    private String imageUrl;
+
+    @Column(nullable = false)
+    private boolean featured;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private Integer stock;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
+    @Builder
+    private Product(
+            String name,
+            String description,
+            BigDecimal price,
+            Integer discountPercentage,
+            String imageUrl,
+            boolean featured,
+            ProductStatus status,
+            Integer stock
+<span class="fc" id="L66">    ) {</span>
+<span class="pc bpc" id="L67" title="1 of 4 branches missed.">        if (stock == null || stock &lt; 0) {</span>
+<span class="fc" id="L68">            throw new InvalidStateException(&quot;Stock must be non-negative&quot;);</span>
+        }
+
+<span class="fc" id="L71">        this.name = name;</span>
+<span class="fc" id="L72">        this.description = description;</span>
+<span class="fc" id="L73">        this.price = price;</span>
+<span class="fc" id="L74">        this.discountPercentage = discountPercentage;</span>
+<span class="fc" id="L75">        this.imageUrl = imageUrl;</span>
+<span class="fc" id="L76">        this.featured = featured;</span>
+<span class="fc" id="L77">        this.status = status;</span>
+<span class="fc" id="L78">        this.stock = stock;</span>
+<span class="fc" id="L79">    }</span>
+
+    @PrePersist
+    protected void onCreate() {
+<span class="nc" id="L83">        this.createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L84">    }</span>
+
+    public void applyDiscount(Integer discountPercentage) {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (discountPercentage != null &amp;&amp;</span>
+<span class="fc bfc" id="L88" title="All 4 branches covered.">                (discountPercentage &lt; 0 || discountPercentage &gt; 90)) {</span>
+<span class="fc" id="L89">            throw new InvalidStateException(&quot;Invalid discount percentage&quot;);</span>
+        }
+<span class="fc" id="L91">        this.discountPercentage = discountPercentage;</span>
+<span class="fc" id="L92">    }</span>
+
+    public void reduceStock(int quantity) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (quantity &lt;= 0) {</span>
+<span class="fc" id="L96">            throw new InvalidStateException(&quot;Quantity must be positive&quot;);</span>
+        }
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (this.stock &lt; quantity) {</span>
+<span class="fc" id="L100">            throw new InvalidStateException(&quot;Insufficient stock&quot;);</span>
+        }
+
+<span class="fc" id="L103">        this.stock -= quantity;</span>
+<span class="fc" id="L104">    }</span>
+
+    public void increaseStock(int quantity) {
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (quantity &lt;= 0) {</span>
+<span class="nc" id="L108">            throw new InvalidStateException(&quot;Quantity must be positive&quot;);</span>
+        }
+
+<span class="fc" id="L111">        this.stock += quantity;</span>
+<span class="fc" id="L112">    }</span>
+
+    public void updateDetails(
+            String name,
+            String description,
+            BigDecimal price,
+            Integer discountPercentage,
+            boolean featured,
+            String imageUrl
+    ) {
+<span class="fc" id="L122">        this.name = name;</span>
+<span class="fc" id="L123">        this.description = description;</span>
+<span class="fc" id="L124">        this.price = price;</span>
+<span class="fc" id="L125">        this.featured = featured;</span>
+<span class="fc" id="L126">        this.imageUrl = imageUrl;</span>
+<span class="fc" id="L127">        applyDiscount(discountPercentage);</span>
+<span class="fc" id="L128">    }</span>
+
+    public void changeStatus(ProductStatus status) {
+<span class="fc" id="L131">        this.status = status;</span>
+<span class="fc" id="L132">    }</span>
+
+    public void updateFeatured(boolean featured) {
+<span class="fc" id="L135">        this.featured = featured;</span>
+<span class="fc" id="L136">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

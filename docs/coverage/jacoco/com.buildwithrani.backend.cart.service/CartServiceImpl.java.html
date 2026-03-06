@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.cart.service</a> &gt; <span class="el_source">CartServiceImpl.java</span></div><h1>CartServiceImpl.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.cart.service;
+
+import com.buildwithrani.backend.audit.entity.Audit;
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.cart.dto.AddToCartRequest;
+import com.buildwithrani.backend.cart.dto.CartResponse;
+import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
+import com.buildwithrani.backend.cart.entity.Cart;
+import com.buildwithrani.backend.cart.entity.CartItem;
+import com.buildwithrani.backend.cart.mapper.CartMapper;
+import com.buildwithrani.backend.cart.repository.CartRepository;
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
+import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class CartServiceImpl implements CartService {
+
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final CartMapper cartMapper;
+
+
+    @Override
+    public CartResponse getCart() {
+<span class="nc" id="L38">        Cart cart = getOrCreateCart();</span>
+<span class="nc" id="L39">        return cartMapper.toResponse(cart);</span>
+    }
+
+    @Override
+    public Cart getCurrentUserCart() {
+<span class="nc" id="L44">        return getOrCreateCart();</span>
+    }
+
+    @Override
+    @Audit(action = &quot;CART_ITEM_ADDED&quot;, entityType = &quot;CART&quot;)
+    public CartResponse addToCart(AddToCartRequest request) {
+
+<span class="fc" id="L51">        Cart cart = getOrCreateCart();</span>
+
+<span class="fc" id="L53">        Product product = productRepository.findById(request.getProductId())</span>
+<span class="fc" id="L54">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found&quot;));</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (product.getStatus() != ProductStatus.ACTIVE) {</span>
+<span class="fc" id="L57">            throw new InvalidStateException(&quot;Product is not available for purchase&quot;);</span>
+        }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (request.getQuantity() &lt;= 0) {</span>
+<span class="fc" id="L60">            throw new InvalidStateException(&quot;Quantity must be positive&quot;);</span>
+        }
+
+<span class="fc" id="L63">        CartItem existingItem = cart.getItems().stream()</span>
+<span class="pc" id="L64">                .filter(item -&gt; item.getProduct().getId().equals(product.getId()))</span>
+<span class="fc" id="L65">                .findFirst()</span>
+<span class="fc" id="L66">                .orElse(null);</span>
+
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        int existingQuantity = existingItem != null ? existingItem.getQuantity() : 0;</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (existingQuantity + request.getQuantity() &gt; product.getStock()) {</span>
+<span class="fc" id="L71">            throw new InvalidStateException(&quot;Insufficient stock&quot;);</span>
+        }
+
+<span class="fc" id="L74">        cart.addProduct(product, request.getQuantity());</span>
+
+<span class="fc" id="L76">        return cartMapper.toResponse(cart);</span>
+    }
+
+    @Override
+    @Audit(action = &quot;CART_ITEM_UPDATED&quot;, entityType = &quot;CART&quot;)
+    public CartResponse updateCartItem(UpdateCartItemRequest request) {
+
+<span class="fc" id="L83">        Cart cart = getOrCreateCart();</span>
+
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        if (request.getQuantity() &lt;= 0) {</span>
+<span class="nc" id="L86">            throw new InvalidStateException(&quot;Quantity must be positive&quot;);</span>
+        }
+
+<span class="fc" id="L89">        Product product = productRepository.findById(request.getProductId())</span>
+<span class="pc" id="L90">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found&quot;));</span>
+
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (request.getQuantity() &gt; product.getStock()) {</span>
+<span class="nc" id="L93">            throw new InvalidStateException(&quot;Insufficient stock&quot;);</span>
+        }
+
+<span class="fc" id="L96">        cart.updateProductQuantity(product, request.getQuantity());</span>
+
+<span class="fc" id="L98">        return cartMapper.toResponse(cart);</span>
+    }
+
+    @Override
+    @Audit(action = &quot;CART_ITEM_REMOVED&quot;, entityType = &quot;CART&quot;)
+    public void removeItem(Long productId) {
+<span class="fc" id="L104">        Cart cart = getOrCreateCart();</span>
+
+<span class="fc" id="L106">        Product product = productRepository.findById(productId)</span>
+<span class="pc" id="L107">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found&quot;));</span>
+
+<span class="fc" id="L109">        cart.removeProduct(product);</span>
+<span class="fc" id="L110">    }</span>
+
+    @Override
+    @Audit(action = &quot;CART_CLEARED&quot;, entityType = &quot;CART&quot;)
+    public void clearCart() {
+<span class="fc" id="L115">        Cart cart = getOrCreateCart();</span>
+<span class="fc" id="L116">        cart.clear();</span>
+<span class="fc" id="L117">    }</span>
+
+    // ----------------- HELPERS (Kept the same) -----------------
+    private Cart getOrCreateCart() {
+<span class="fc" id="L121">        User user = getCurrentUser();</span>
+<span class="fc" id="L122">        return cartRepository.findByUser(user)</span>
+<span class="pc" id="L123">                .orElseGet(() -&gt; cartRepository.save(new Cart(user)));</span>
+    }
+
+    private User getCurrentUser() {
+<span class="fc" id="L127">        String email = SecurityContextHolder.getContext().getAuthentication().getName();</span>
+<span class="fc" id="L128">        return userRepository.findByEmail(email)</span>
+<span class="pc" id="L129">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;User not found&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

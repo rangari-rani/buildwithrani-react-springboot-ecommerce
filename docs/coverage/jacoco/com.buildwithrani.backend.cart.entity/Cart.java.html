@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cart.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.cart.entity</a> &gt; <span class="el_source">Cart.java</span></div><h1>Cart.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.cart.entity;
+
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
+import com.buildwithrani.backend.product.entity.Product;
+import jakarta.persistence.*;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Entity
+@Getter
+public class Cart {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // One cart per user
+    @OneToOne
+    @JoinColumn(name = &quot;user_id&quot;, nullable = false, unique = true)
+    private User user;
+
+<span class="fc" id="L26">    @OneToMany(</span>
+            mappedBy = &quot;cart&quot;,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List&lt;CartItem&gt; items = new ArrayList&lt;&gt;();
+
+<span class="fc" id="L33">    protected Cart() {</span>
+        // for JPA
+<span class="fc" id="L35">    }</span>
+
+<span class="fc" id="L37">    public Cart(User user) {</span>
+<span class="fc" id="L38">        this.user = user;</span>
+<span class="fc" id="L39">    }</span>
+
+    public void addProduct(Product product, int quantity) {
+
+<span class="fc" id="L43">        Optional&lt;CartItem&gt; existingItem = findItem(product);</span>
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (existingItem.isPresent()) {</span>
+<span class="fc" id="L46">            existingItem.get().increaseQuantity(quantity);</span>
+        } else {
+<span class="fc" id="L48">            CartItem newItem = new CartItem(this, product, quantity);</span>
+<span class="fc" id="L49">            items.add(newItem);</span>
+        }
+<span class="fc" id="L51">    }</span>
+
+    public void updateProductQuantity(Product product, int quantity) {
+<span class="fc" id="L54">        CartItem item = findItem(product)</span>
+<span class="fc" id="L55">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L56">                        new ResourceNotFoundException(&quot;Product not found in cart&quot;)</span>
+                );
+
+
+<span class="fc" id="L60">        item.updateQuantity(quantity);</span>
+<span class="fc" id="L61">    }</span>
+
+    public void removeProduct(Product product) {
+<span class="fc" id="L64">        findItem(product).ifPresent(items::remove);</span>
+<span class="fc" id="L65">    }</span>
+
+    public void clear() {
+<span class="fc" id="L68">        items.clear();</span>
+<span class="fc" id="L69">    }</span>
+
+    private Optional&lt;CartItem&gt; findItem(Product product) {
+<span class="fc" id="L72">        return items.stream()</span>
+<span class="fc" id="L73">                .filter(item -&gt; item.getProduct().equals(product))</span>
+<span class="fc" id="L74">                .findFirst();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminProductController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.product.controller</a> &gt; <span class="el_source">AdminProductController.java</span></div><h1>AdminProductController.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.product.controller;
+
+import com.buildwithrani.backend.common.enums.ProductStatus;
+import com.buildwithrani.backend.product.dto.ProductRequestDTO;
+import com.buildwithrani.backend.product.dto.ProductResponseDTO;
+import com.buildwithrani.backend.product.service.ProductService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.buildwithrani.backend.common.dto.ApiResponse;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/admin/products&quot;)
+@RequiredArgsConstructor
+@PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+public class AdminProductController {
+
+    private final ProductService productService;
+
+    // -------- CREATE PRODUCT --------
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity&lt;ProductResponseDTO&gt; createProduct(
+            @RequestPart(value = &quot;image&quot;, required = false) MultipartFile image,
+            @RequestParam(&quot;name&quot;) String name,
+            @RequestParam(&quot;description&quot;) String description,
+            @RequestParam(&quot;price&quot;) BigDecimal price,
+            @RequestParam(value = &quot;discountPercentage&quot;, required = false) Integer discountPercentage,
+            @RequestParam(value = &quot;featured&quot;, defaultValue = &quot;false&quot;) boolean featured,
+            @RequestParam(&quot;stock&quot;) Integer stock
+    ) {
+
+<span class="fc" id="L39">        ProductRequestDTO dto = ProductRequestDTO.builder()</span>
+<span class="fc" id="L40">                .name(name)</span>
+<span class="fc" id="L41">                .description(description)</span>
+<span class="fc" id="L42">                .price(price)</span>
+<span class="fc" id="L43">                .discountPercentage(discountPercentage)</span>
+<span class="fc" id="L44">                .featured(featured)</span>
+<span class="fc" id="L45">                .stock(stock)</span>
+<span class="fc" id="L46">                .build();</span>
+
+<span class="fc" id="L48">        ProductResponseDTO created = productService.createProduct(dto, image);</span>
+
+<span class="fc" id="L50">        return ResponseEntity.status(HttpStatus.CREATED).body(created);</span>
+    }
+
+
+    // -------- UPDATE PRODUCT --------
+    @PutMapping(
+            value = &quot;/{id}&quot;,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity&lt;ProductResponseDTO&gt; updateProduct(
+            @PathVariable Long id,
+            @RequestParam String name,
+            @RequestParam String description,
+            @RequestParam BigDecimal price,
+            @RequestParam(required = false) Integer discountPercentage,
+            @RequestParam boolean featured,
+            @RequestPart(value = &quot;image&quot;, required = false) MultipartFile image
+    ) {
+<span class="fc" id="L68">        ProductRequestDTO dto = ProductRequestDTO.builder()</span>
+<span class="fc" id="L69">                .name(name)</span>
+<span class="fc" id="L70">                .description(description)</span>
+<span class="fc" id="L71">                .price(price)</span>
+<span class="fc" id="L72">                .discountPercentage(discountPercentage)</span>
+<span class="fc" id="L73">                .featured(featured)</span>
+<span class="fc" id="L74">                .build();</span>
+
+<span class="fc" id="L76">        ProductResponseDTO updated =</span>
+<span class="fc" id="L77">                productService.updateProduct(id, dto, image);</span>
+
+<span class="fc" id="L79">        return ResponseEntity.ok(updated);</span>
+    }
+
+    @PatchMapping(&quot;/{id}/stock/increase&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; increaseStock(
+            @PathVariable Long id,
+            @RequestParam int quantity
+    ) {
+<span class="fc" id="L87">        productService.increaseStock(id, quantity);</span>
+
+<span class="fc" id="L89">        return ResponseEntity.ok(</span>
+<span class="fc" id="L90">                ApiResponse.success(&quot;Stock increased successfully&quot;)</span>
+        );
+    }
+
+    @PatchMapping(&quot;/{id}/stock/decrease&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; decreaseStock(
+            @PathVariable Long id,
+            @RequestParam int quantity
+    ) {
+<span class="fc" id="L99">        productService.decreaseStock(id, quantity);</span>
+
+<span class="fc" id="L101">        return ResponseEntity.ok(</span>
+<span class="fc" id="L102">                ApiResponse.success(&quot;Stock decreased successfully&quot;)</span>
+        );
+    }
+
+    // -------- GET ALL PRODUCTS (ADMIN) --------
+    @GetMapping
+    public ResponseEntity&lt;List&lt;ProductResponseDTO&gt;&gt; getAllProducts() {
+<span class="fc" id="L109">        return ResponseEntity.ok(productService.getAllProducts());</span>
+    }
+
+    // -------- UPDATE PRODUCT STATUS --------
+    @PatchMapping(&quot;/{id}/status&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; updateProductStatus(
+            @PathVariable Long id,
+            @RequestParam ProductStatus status
+    ) {
+<span class="fc" id="L118">        productService.updateProductStatus(id, status);</span>
+
+<span class="fc" id="L120">        return ResponseEntity.ok(</span>
+<span class="fc" id="L121">                ApiResponse.success(&quot;Product status updated successfully&quot;)</span>
+        );
+    }
+
+
+    // -------- TOGGLE FEATURED --------
+    @PatchMapping(&quot;/{id}/featured&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; updateFeaturedStatus(
+            @PathVariable Long id,
+            @RequestParam boolean featured
+    ) {
+<span class="fc" id="L132">        productService.updateFeaturedStatus(id, featured);</span>
+
+<span class="fc" id="L134">        return ResponseEntity.ok(</span>
+<span class="fc" id="L135">                ApiResponse.success(&quot;Product featured status updated successfully&quot;)</span>
+        );
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

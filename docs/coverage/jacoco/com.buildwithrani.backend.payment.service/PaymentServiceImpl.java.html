@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaymentServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.payment.service</a> &gt; <span class="el_source">PaymentServiceImpl.java</span></div><h1>PaymentServiceImpl.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.payment.service;
+
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+import com.buildwithrani.backend.common.exception.ResourceNotFoundException;
+import com.buildwithrani.backend.order.entity.Order;
+import com.buildwithrani.backend.order.entity.OrderItem;
+import com.buildwithrani.backend.order.enums.PaymentStatus;
+import com.buildwithrani.backend.order.repository.OrderRepository;
+import com.buildwithrani.backend.payment.gateway.PaymentGateway;
+import com.buildwithrani.backend.product.entity.Product;
+import com.buildwithrani.backend.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class PaymentServiceImpl implements PaymentService {
+
+    private final OrderRepository orderRepository;
+    private final PaymentGateway paymentGateway;
+    private final ProductRepository productRepository;
+
+    @Override
+    public String createPayment(Long orderId) {
+
+<span class="fc" id="L28">        Order order = orderRepository.findById(orderId)</span>
+<span class="fc" id="L29">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Order not found&quot;));</span>
+
+        // Prevent duplicate payment creation
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (order.getPaymentStatus() == PaymentStatus.SUCCESS) {</span>
+<span class="fc" id="L33">            throw new InvalidStateException(&quot;Order is already paid&quot;);</span>
+        }
+
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (order.getPaymentStatus() == PaymentStatus.CREATED) {</span>
+<span class="fc" id="L37">            return order.getRazorpayOrderId(); // idempotent behavior</span>
+        }
+
+<span class="fc" id="L40">        String razorpayOrderId =</span>
+<span class="fc" id="L41">                paymentGateway.createOrder(order.getTotalAmount());</span>
+
+<span class="fc" id="L43">        order.markPaymentCreated(razorpayOrderId);</span>
+
+<span class="fc" id="L45">        return razorpayOrderId;</span>
+    }
+
+    @Override
+    public void verifyPayment(
+            Long orderId,
+            String razorpayOrderId,
+            String razorpayPaymentId,
+            String signature
+    ) {
+
+<span class="fc" id="L56">        Order order = orderRepository.findById(orderId)</span>
+<span class="fc" id="L57">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Order not found&quot;));</span>
+
+        // Idempotency guard
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (order.getPaymentStatus() == PaymentStatus.SUCCESS) {</span>
+<span class="fc" id="L61">            return;</span>
+        }
+
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (!razorpayOrderId.equals(order.getRazorpayOrderId())) {</span>
+<span class="fc" id="L65">            throw new InvalidStateException(&quot;Razorpay order ID mismatch&quot;);</span>
+        }
+
+<span class="fc" id="L68">        boolean verified = paymentGateway.verifyPayment(</span>
+                razorpayOrderId,
+                razorpayPaymentId,
+                signature
+        );
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (!verified) {</span>
+<span class="fc" id="L75">            throw new InvalidStateException(&quot;Payment signature verification failed&quot;);</span>
+        }
+
+        // Reduce stock FIRST
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (OrderItem item : order.getOrderItems()) {</span>
+
+<span class="fc" id="L81">            Product product = productRepository.findById(item.getProductId())</span>
+<span class="pc" id="L82">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found&quot;));</span>
+
+<span class="fc" id="L84">            product.reduceStock(item.getQuantity());</span>
+<span class="fc" id="L85">        }</span>
+
+        //  Then mark payment success
+<span class="fc" id="L88">        order.markPaymentSuccess(razorpayPaymentId, signature);</span>
+<span class="fc" id="L89">    }}</span>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

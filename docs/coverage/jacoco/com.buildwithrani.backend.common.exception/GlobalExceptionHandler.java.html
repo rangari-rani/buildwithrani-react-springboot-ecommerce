@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.common.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.common.exception;
+
+import com.buildwithrani.backend.common.dto.ErrorResponse;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+<span class="fc" id="L20">public class GlobalExceptionHandler {</span>
+
+<span class="fc" id="L22">    private static final Logger log =</span>
+<span class="fc" id="L23">            LoggerFactory.getLogger(GlobalExceptionHandler.class);</span>
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L30">        return build(HttpStatus.NOT_FOUND, &quot;RESOURCE_NOT_FOUND&quot;, ex.getMessage(), request);</span>
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L38">        return build(HttpStatus.FORBIDDEN, &quot;ACCESS_DENIED&quot;, ex.getMessage(), request);</span>
+    }
+
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleInvalidState(
+            InvalidStateException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L46">        return build(HttpStatus.CONFLICT, &quot;INVALID_STATE&quot;, ex.getMessage(), request);</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleValidation(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L54">        String message = ex.getBindingResult()</span>
+<span class="fc" id="L55">                .getFieldErrors()</span>
+<span class="fc" id="L56">                .stream()</span>
+<span class="fc" id="L57">                .map(e -&gt; e.getField() + &quot;: &quot; + e.getDefaultMessage())</span>
+<span class="fc" id="L58">                .findFirst()</span>
+<span class="fc" id="L59">                .orElse(&quot;Validation failed&quot;);</span>
+
+<span class="fc" id="L61">        return build(HttpStatus.BAD_REQUEST, &quot;VALIDATION_ERROR&quot;, message, request);</span>
+    }
+
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleOptimisticLock(
+            OptimisticLockException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L70">        log.warn(&quot;Optimistic lock conflict at path: {}&quot;, request.getRequestURI());</span>
+<span class="fc" id="L71">        return build(</span>
+                HttpStatus.CONFLICT,
+                &quot;CONCURRENT_MODIFICATION&quot;,
+                &quot;Resource was modified by another transaction. Please retry.&quot;,
+                request
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleDataIntegrity(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L84">        log.error(&quot;Database constraint violation&quot;, ex);</span>
+
+<span class="fc" id="L86">        return build(</span>
+                HttpStatus.CONFLICT,
+                &quot;DATA_INTEGRITY_VIOLATION&quot;,
+                &quot;Database constraint violation occurred.&quot;,
+                request
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleGeneric(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L99">        log.error(&quot;Unhandled exception occurred&quot;, ex);</span>
+<span class="fc" id="L100">        return build(HttpStatus.INTERNAL_SERVER_ERROR, &quot;INTERNAL_ERROR&quot;, &quot;Something went wrong&quot;, request);</span>
+    }
+
+    private ResponseEntity&lt;ErrorResponse&gt; build(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request
+    ) {
+<span class="fc" id="L109">        ErrorResponse response = ErrorResponse.builder()</span>
+<span class="fc" id="L110">                .success(false)</span>
+<span class="fc" id="L111">                .status(status.value())</span>
+<span class="fc" id="L112">                .errorCode(code)</span>
+<span class="fc" id="L113">                .message(message)</span>
+<span class="fc" id="L114">                .path(request.getRequestURI())</span>
+<span class="fc" id="L115">                .timestamp(LocalDateTime.now())</span>
+<span class="fc" id="L116">                .build();</span>
+
+<span class="fc" id="L118">        return new ResponseEntity&lt;&gt;(response, status);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

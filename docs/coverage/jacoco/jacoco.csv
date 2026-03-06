@@ -1,0 +1,58 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+backend,com.buildwithrani.backend.product.mapper,ProductMapper,0,40,0,2,0,14,0,3,0,2
+backend,com.buildwithrani.backend.auth.config,SecurityConfig,8,185,0,0,2,34,2,11,2,11
+backend,com.buildwithrani.backend.audit.entity,AuditLog,4,21,0,0,2,8,1,1,1,1
+backend,com.buildwithrani.backend.audit.aspect,AuditAspect,232,0,38,0,48,0,22,0,3,0
+backend,com.buildwithrani.backend.cart.entity,CartItem,0,51,0,6,0,17,0,7,0,4
+backend,com.buildwithrani.backend.cart.entity,Cart,0,89,0,2,0,24,0,10,0,9
+backend,com.buildwithrani.backend.bootstrap,DataSeeder,227,34,3,3,77,10,6,2,3,2
+backend,com.buildwithrani.backend.product.controller,AdminProductController,0,92,0,0,0,33,0,7,0,7
+backend,com.buildwithrani.backend.product.controller,ProductController,0,19,0,0,0,4,0,4,0,4
+backend,com.buildwithrani.backend.audit.enums,ActorRole,0,15,0,0,0,3,0,1,0,1
+backend,com.buildwithrani.backend.payment.config,RazorpayConfig,0,11,0,0,0,2,0,2,0,2
+backend,com.buildwithrani.backend.product.service,ProductServiceImpl,39,271,6,12,2,77,9,17,4,13
+backend,com.buildwithrani.backend.payment.gateway,RazorpayGateway,6,60,0,0,1,15,0,3,0,3
+backend,com.buildwithrani.backend.product.entity,Product,9,119,2,14,3,37,3,13,1,7
+backend,com.buildwithrani.backend.audit.controller,AuditController,0,21,0,6,0,6,0,4,0,1
+backend,com.buildwithrani.backend.order.enums,OrderStatus,0,54,0,4,0,9,0,5,0,3
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},3,5,0,0,1,1,1,1,1,1
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},3,5,0,0,1,1,1,1,1,1
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},0,9,0,0,0,2,0,2,0,2
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},0,8,0,0,0,2,0,2,0,2
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},3,5,0,0,1,1,1,1,1,1
+backend,com.buildwithrani.backend.order.enums,OrderStatus.new OrderStatus() {...},3,5,0,0,1,1,1,1,1,1
+backend,com.buildwithrani.backend.order.enums,PaymentStatus,0,33,0,0,0,6,0,1,0,1
+backend,com.buildwithrani.backend.common.dto,ApiResponse,7,41,0,0,1,12,1,7,1,7
+backend,com.buildwithrani.backend.auth.model,Role,0,15,0,0,0,3,0,1,0,1
+backend,com.buildwithrani.backend.auth.model,User,0,13,0,0,0,4,0,2,0,2
+backend,com.buildwithrani.backend.audit.service,AuditServiceImpl,0,25,0,0,0,5,0,2,0,2
+backend,com.buildwithrani.backend.payment.controller,PaymentController,0,24,0,0,0,9,0,2,0,2
+backend,com.buildwithrani.backend.config,OpenApiConfig,0,42,0,0,0,14,0,2,0,2
+backend,com.buildwithrani.backend.auth.service,AuthService,0,137,0,4,0,35,0,8,0,6
+backend,com.buildwithrani.backend.order.controller,OrderController,0,30,0,0,0,7,0,4,0,4
+backend,com.buildwithrani.backend.order.controller,AdminOrderController,15,0,0,0,5,0,2,0,2,0
+backend,com.buildwithrani.backend.payment.service,PaymentServiceImpl,5,113,0,12,0,26,1,10,1,4
+backend,com.buildwithrani.backend.cart.dto,UpdateCartItemRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend.cart.dto,AddToCartRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend.auth.security,SecurityUtils,11,10,4,2,4,3,3,1,0,1
+backend,com.buildwithrani.backend.auth.security,JwtAuthenticationFilter,88,11,6,0,25,4,5,1,2,1
+backend,com.buildwithrani.backend.auth.security,JwtUtil,27,11,0,0,8,4,1,1,1,1
+backend,com.buildwithrani.backend.order.mapper,OrderMapper,0,47,0,0,0,19,0,2,0,2
+backend,com.buildwithrani.backend.payment.dto,CreatePaymentRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend.payment.dto,VerifyPaymentRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend.common.enums,ProductStatus,0,21,0,0,0,4,0,1,0,1
+backend,com.buildwithrani.backend.common.exception,AccessDeniedException,0,4,0,0,0,2,0,1,0,1
+backend,com.buildwithrani.backend.common.exception,InvalidStateException,0,4,0,0,0,2,0,1,0,1
+backend,com.buildwithrani.backend.common.exception,ResourceNotFoundException,0,4,0,0,0,2,0,1,0,1
+backend,com.buildwithrani.backend.common.exception,GlobalExceptionHandler,0,112,0,0,0,28,0,11,0,11
+backend,com.buildwithrani.backend.common.cloudinary,CloudinaryConfig,0,37,0,0,0,3,0,2,0,2
+backend,com.buildwithrani.backend.common.cloudinary,CloudinaryService,22,0,0,0,6,0,1,0,1,0
+backend,com.buildwithrani.backend.auth.controller,AuthController,7,21,1,1,2,7,1,4,0,4
+backend,com.buildwithrani.backend.auth.dto,LoginRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend.auth.dto,SignupRequest,0,3,0,0,0,1,0,1,0,1
+backend,com.buildwithrani.backend,BackendApplication,5,3,0,0,2,1,1,1,1,1
+backend,com.buildwithrani.backend.order.entity,Order,4,105,0,12,2,31,1,11,1,5
+backend,com.buildwithrani.backend.cart.mapper,CartMapper,0,33,0,0,0,11,0,3,0,3
+backend,com.buildwithrani.backend.cart.service,CartServiceImpl,56,155,3,9,5,37,10,10,7,7
+backend,com.buildwithrani.backend.cart.controller,CartController,0,30,0,0,0,7,0,5,0,5
+backend,com.buildwithrani.backend.order.service,OrderServiceImpl,42,295,1,11,10,70,4,16,3,11

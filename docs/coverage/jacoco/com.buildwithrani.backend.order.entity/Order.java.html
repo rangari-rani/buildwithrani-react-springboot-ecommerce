@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Order.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.order.entity</a> &gt; <span class="el_source">Order.java</span></div><h1>Order.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.order.entity;
+
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.order.enums.OrderStatus;
+import com.buildwithrani.backend.order.enums.PaymentStatus;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import com.buildwithrani.backend.common.exception.InvalidStateException;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(
+        name = &quot;orders&quot;,
+        indexes = {
+                @Index(name = &quot;idx_orders_user&quot;, columnList = &quot;user_id&quot;),
+                @Index(name = &quot;idx_orders_status&quot;, columnList = &quot;order_status&quot;)
+        }
+)
+@Getter
+@NoArgsConstructor
+public class Order {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Order belongs to a user
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;user_id&quot;, nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus orderStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
+
+    @Column(name = &quot;razorpay_order_id&quot;)
+    private String razorpayOrderId;
+
+    @Column(name = &quot;razorpay_payment_id&quot;)
+    private String razorpayPaymentId;
+
+    @Column(name = &quot;payment_signature&quot;)
+    private String paymentSignature;
+
+    @OneToMany(
+            mappedBy = &quot;order&quot;,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List&lt;OrderItem&gt; orderItems = new ArrayList&lt;&gt;();
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
+    /* =====================
+       LIFECYCLE MANAGEMENT
+       ===================== */
+
+    @PrePersist
+    protected void onCreate() {
+<span class="nc" id="L77">        this.createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L78">    }</span>
+
+
+    /* =====================
+       DOMAIN METHODS
+       ===================== */
+
+    public void markPaymentSuccess(String paymentId, String signature) {
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (this.paymentStatus == PaymentStatus.SUCCESS) {</span>
+<span class="fc" id="L88">            return; // prevent duplicate processing</span>
+        }
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (!orderStatus.canTransitionTo(OrderStatus.PAID)) {</span>
+<span class="fc" id="L92">            throw new InvalidStateException(</span>
+                    &quot;Cannot mark order as PAID from state: &quot; + orderStatus
+            );
+        }
+
+<span class="fc" id="L97">        this.paymentStatus = PaymentStatus.SUCCESS;</span>
+<span class="fc" id="L98">        this.razorpayPaymentId = paymentId;</span>
+<span class="fc" id="L99">        this.paymentSignature = signature;</span>
+<span class="fc" id="L100">        this.orderStatus = OrderStatus.PAID;</span>
+<span class="fc" id="L101">    }</span>
+
+    public void markPaymentCreated(String razorpayOrderId) {
+
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (this.paymentStatus == PaymentStatus.SUCCESS) {</span>
+<span class="fc" id="L106">            throw new InvalidStateException(&quot;Payment already completed for this order&quot;);</span>
+        }
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (this.paymentStatus == PaymentStatus.CREATED) {</span>
+<span class="fc" id="L110">            return; // idempotent protection</span>
+        }
+
+<span class="fc" id="L113">        this.paymentStatus = PaymentStatus.CREATED;</span>
+<span class="fc" id="L114">        this.razorpayOrderId = razorpayOrderId;</span>
+<span class="fc" id="L115">    }</span>
+
+    public void advanceByAdmin(OrderStatus nextStatus) {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (!orderStatus.canTransitionTo(nextStatus)) {</span>
+<span class="fc" id="L119">            throw new InvalidStateException(</span>
+                    &quot;Invalid order transition from &quot; + orderStatus + &quot; to &quot; + nextStatus
+            );
+        }
+<span class="fc" id="L123">        this.orderStatus = nextStatus;</span>
+<span class="fc" id="L124">    }</span>
+
+    public void cancelByUser() {
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        if (orderStatus != OrderStatus.CREATED) {</span>
+<span class="fc" id="L128">            throw new InvalidStateException(</span>
+                    &quot;Only unpaid orders can be cancelled&quot;
+            );
+        }
+<span class="fc" id="L132">        this.orderStatus = OrderStatus.CANCELLED;</span>
+<span class="fc" id="L133">    }</span>
+    public static Order create(
+            User user,
+            BigDecimal totalAmount,
+            List&lt;OrderItem&gt; orderItems
+    ) {
+<span class="fc" id="L139">        Order order = new Order();</span>
+<span class="fc" id="L140">        order.user = user;</span>
+<span class="fc" id="L141">        order.totalAmount = totalAmount;</span>
+<span class="fc" id="L142">        order.orderItems = orderItems;</span>
+
+
+<span class="fc" id="L145">        order.orderStatus = OrderStatus.CREATED;</span>
+<span class="fc" id="L146">        order.paymentStatus = PaymentStatus.PENDING;</span>
+
+<span class="fc" id="L148">        return order;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

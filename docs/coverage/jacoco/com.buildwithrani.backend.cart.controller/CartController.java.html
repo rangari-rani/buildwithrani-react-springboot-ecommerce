@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.cart.controller</a> &gt; <span class="el_source">CartController.java</span></div><h1>CartController.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.cart.controller;
+
+import com.buildwithrani.backend.cart.dto.AddToCartRequest;
+import com.buildwithrani.backend.cart.dto.CartResponse;
+import com.buildwithrani.backend.cart.dto.UpdateCartItemRequest;
+import com.buildwithrani.backend.cart.service.CartService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(&quot;/api/cart&quot;)
+@RequiredArgsConstructor
+@PreAuthorize(&quot;hasRole('USER')&quot;)
+public class CartController {
+
+    private final CartService cartService;
+
+    // Get current user's cart
+    @GetMapping
+    public ResponseEntity&lt;CartResponse&gt; getCart() {
+<span class="fc" id="L24">        return ResponseEntity.ok(cartService.getCart());</span>
+    }
+
+    // Add product to cart
+    @PostMapping(&quot;/add&quot;)
+    public ResponseEntity&lt;CartResponse&gt; addToCart(
+            @Valid @RequestBody AddToCartRequest request
+    ) {
+<span class="fc" id="L32">        return ResponseEntity.ok(cartService.addToCart(request));</span>
+    }
+
+    // Update quantity of a cart item
+    @PutMapping(&quot;/update&quot;)
+    public ResponseEntity&lt;CartResponse&gt; updateCartItem(
+            @Valid @RequestBody UpdateCartItemRequest request
+    ) {
+<span class="fc" id="L40">        return ResponseEntity.ok(cartService.updateCartItem(request));</span>
+    }
+
+    // Remove a product from cart
+    @DeleteMapping(&quot;/remove/{productId}&quot;)
+    public ResponseEntity&lt;Void&gt; removeItem(@PathVariable Long productId) {
+<span class="fc" id="L46">        cartService.removeItem(productId);</span>
+<span class="fc" id="L47">        return ResponseEntity.noContent().build();</span>
+    }
+
+    // Clear entire cart
+    @DeleteMapping(&quot;/clear&quot;)
+    public ResponseEntity&lt;Void&gt; clearCart() {
+<span class="fc" id="L53">        cartService.clearCart();</span>
+<span class="fc" id="L54">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

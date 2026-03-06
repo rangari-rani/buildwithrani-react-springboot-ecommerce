@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditAspect.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.buildwithrani.backend.audit.aspect</a> &gt; <span class="el_source">AuditAspect.java</span></div><h1>AuditAspect.java</h1><pre class="source lang-java linenums">package com.buildwithrani.backend.audit.aspect;
+
+import com.buildwithrani.backend.audit.entity.Audit;
+import com.buildwithrani.backend.audit.enums.ActorRole;
+import com.buildwithrani.backend.audit.service.AuditService;
+import com.buildwithrani.backend.auth.model.User;
+import com.buildwithrani.backend.auth.repository.UserRepository;
+import com.buildwithrani.backend.auth.security.SecurityUtils;
+import com.buildwithrani.backend.cart.dto.CartResponse; // Ensure this matches your package
+import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Method;
+
+@Aspect
+@Component
+@RequiredArgsConstructor
+public class AuditAspect {
+
+    private final AuditService auditService;
+    private final UserRepository userRepository;
+
+    @AfterReturning(pointcut = &quot;@annotation(auditAnnotation)&quot;, returning = &quot;result&quot;)
+    public void logAuditActivity(JoinPoint joinPoint, Audit auditAnnotation, Object result) {
+
+        // 1. Resolve Actor Details from Security Context
+<span class="nc" id="L30">        String email = SecurityUtils.getCurrentUserEmail();</span>
+<span class="nc" id="L31">        Long actorId = null;</span>
+<span class="nc" id="L32">        ActorRole actorRole = ActorRole.USER;</span>
+
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (email != null) {</span>
+<span class="nc" id="L35">            User user = userRepository.findByEmail(email).orElse(null);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (user != null) {</span>
+<span class="nc" id="L37">                actorId = user.getId();</span>
+<span class="nc bnc" id="L38" title="All 4 branches missed.">                if (user.getRole() != null &amp;&amp; user.getRole().name().equalsIgnoreCase(&quot;ADMIN&quot;)) {</span>
+<span class="nc" id="L39">                    actorRole = ActorRole.ADMIN;</span>
+                }
+            }
+        }
+
+        // 2. Extract Entity ID (Handles result objects and method arguments)
+<span class="nc" id="L45">        Long entityId = extractId(result, joinPoint.getArgs());</span>
+
+        // 3. Extract Smart Metadata
+<span class="nc" id="L48">        String metadata = extractMetadata(result, joinPoint.getArgs());</span>
+
+        // 4. Execute Logging
+<span class="nc" id="L51">        auditService.logAction(</span>
+                actorId,
+                actorRole,
+<span class="nc" id="L54">                auditAnnotation.action(),</span>
+<span class="nc" id="L55">                auditAnnotation.entityType(),</span>
+                entityId,
+                metadata
+        );
+<span class="nc" id="L59">    }</span>
+
+    private String extractMetadata(Object result, Object[] args) {
+        // A. Handle Cart Actions
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (result instanceof CartResponse) {</span>
+<span class="nc" id="L64">            CartResponse cart = (CartResponse) result;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            int itemCount = (cart.getItems() != null) ? cart.getItems().size() : 0;</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            if (itemCount == 0) {</span>
+<span class="nc" id="L68">                return &quot;User cleared all items from cart&quot;;</span>
+            }
+
+            // NEW: Try to get Quantity from the Request Object (AddToCartRequest/UpdateCartItemRequest)
+<span class="nc bnc" id="L72" title="All 4 branches missed.">            if (args != null &amp;&amp; args.length &gt; 0) {</span>
+                try {
+<span class="nc" id="L74">                    Method getQty = args[0].getClass().getMethod(&quot;getQuantity&quot;);</span>
+<span class="nc" id="L75">                    Object qty = getQty.invoke(args[0]);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                    if (qty != null) {</span>
+<span class="nc" id="L77">                        return &quot;Qty: &quot; + qty + &quot; | Items in cart: &quot; + itemCount;</span>
+                    }
+<span class="nc" id="L79">                } catch (Exception e) {</span>
+                    // No getQuantity method found in this specific request object
+<span class="nc" id="L81">                }</span>
+            }
+
+<span class="nc" id="L84">            return &quot;Items in cart: &quot; + itemCount;</span>
+        }
+
+        // B. Handle Order Actions (Capture total price)
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (result != null &amp;&amp; result.getClass().getSimpleName().contains(&quot;Order&quot;)) {</span>
+            try {
+<span class="nc" id="L90">                Method getAmount = result.getClass().getMethod(&quot;getTotalAmount&quot;);</span>
+<span class="nc" id="L91">                return &quot;Total: &quot; + getAmount.invoke(result).toString();</span>
+<span class="nc" id="L92">            } catch (Exception e) { }</span>
+        }
+
+        // C. Handle Status Toggles (Product featured/active)
+<span class="nc bnc" id="L96" title="All 4 branches missed.">        if (args != null &amp;&amp; args.length &gt;= 2) {</span>
+<span class="nc" id="L97">            return &quot;Value: &quot; + args[1].toString();</span>
+        }
+
+
+<span class="nc" id="L101">        return &quot;AOP-tracked action&quot;;</span>
+    }
+
+    private Long extractId(Object result, Object[] args) {
+        // 1. Try to get ID from the result (Works for OrderResponse/Product)
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (result != null) {</span>
+<span class="nc" id="L107">            String[] methodNames = {&quot;getId&quot;, &quot;getOrderId&quot;, &quot;getCartId&quot;};</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            for (String methodName : methodNames) {</span>
+                try {
+<span class="nc" id="L110">                    Method method = result.getClass().getMethod(methodName);</span>
+<span class="nc" id="L111">                    return (Long) method.invoke(result);</span>
+<span class="nc" id="L112">                } catch (Exception e) { }</span>
+            }
+        }
+
+        // 2. Try to get ID from method arguments (Works for Cart)
+<span class="nc bnc" id="L117" title="All 4 branches missed.">        if (args != null &amp;&amp; args.length &gt; 0) {</span>
+            // Case A: Argument is a simple Long (like removeItem(Long productId))
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (args[0] instanceof Long) {</span>
+<span class="nc" id="L120">                return (Long) args[0];</span>
+            }
+
+            // Case B: Argument is a Request Object (like AddToCartRequest)
+            try {
+<span class="nc" id="L125">                Method getProductId = args[0].getClass().getMethod(&quot;getProductId&quot;);</span>
+<span class="nc" id="L126">                return (Long) getProductId.invoke(args[0]);</span>
+<span class="nc" id="L127">            } catch (Exception e) {</span>
+                // If it's not a productId, maybe it's an orderId in a request?
+            }
+        }
+<span class="nc" id="L131">        return 0L;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
