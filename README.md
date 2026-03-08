@@ -15,11 +15,13 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![JWT](https://img.shields.io/badge/Auth-JWT-purple)
 
+![Tests](https://img.shields.io/badge/Tests-JUnit%20%7C%20Mockito%20%7C%2075%25%20Coverage-blue)
+
 <br/>
 
-<a href="https://buildwithrani.com">📘 BuildWithRani Docs</a>
+<a href="https://buildwithrani.com">BuildWithRani Docs</a>
 &nbsp;•&nbsp;
-<a href="https://linkedin.com/in/rani-rangari">💼 LinkedIn</a>
+<a href="https://linkedin.com/in/rani-rangari">LinkedIn</a>
 
 </div>
 
@@ -35,6 +37,7 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 - Dockerized full stack (React + Spring Boot + MySQL)
 - Automatically seeded demo data (users, products, orders)
 - Clean REST API design ready for OpenAPI / Swagger integration
+- Comprehensive unit testing with JUnit + Mockito (75% overall coverage)
   
 ---
 
@@ -51,7 +54,12 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 - [**Vite**](https://vitejs.dev/) – modern frontend build tool and dev server  
 
 ### Database
-- [**MySQL 8**](https://www.mysql.com/) – relational database for transactional persistence  
+- [**MySQL 8**](https://www.mysql.com/) – relational database for transactional persistence
+
+### Testing
+- **JUnit 5** – unit testing framework  
+- **Mockito** – mocking framework for isolating service and domain logic  
+- **Test Coverage:** 75% overall (87% service layer, 90% domain layer)
 
 ### Infrastructure
 - [**Docker**](https://www.docker.com/) – containerization platform  
