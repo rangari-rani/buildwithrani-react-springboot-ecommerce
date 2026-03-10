@@ -8,7 +8,7 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 
 <br/>
 
-![Java](https://img.shields.io/badge/Java-17-orange)
+![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
 ![React](https://img.shields.io/badge/React-Vite-blue)
 ![MySQL](https://img.shields.io/badge/MySQL-8-blue)
