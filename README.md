@@ -44,7 +44,7 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 ## ⚙️ Tech Stack
 
 ### Backend
-- [**Java 17**](https://www.oracle.com/java/) – core language for backend development  
+- [**Java 21**](https://www.oracle.com/java/) – core language for backend development  
 - [**Spring Boot**](https://spring.io/projects/spring-boot) – framework for building domain-driven REST APIs and workflow orchestration  
 - [**Spring Security**](https://spring.io/projects/spring-security) – authentication and authorization layer  
 - [**JWT (JSON Web Tokens)**](https://jwt.io/) – stateless token-based authentication  
