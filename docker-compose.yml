@@ -18,6 +18,12 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
   backend:
     build: ./backend
     container_name: bwr-backend
