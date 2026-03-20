@@ -35,4 +35,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         order by o.createdAt desc
     """)
     List<Order> findAllWithItems();
+
+    Optional<Order> findByRazorpayOrderId(String razorpayOrderId);
 }
