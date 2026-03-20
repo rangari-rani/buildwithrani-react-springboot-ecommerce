@@ -10,4 +10,5 @@ public interface PaymentService {
             String razorpayPaymentId,
             String signature
     );
+    void processWebhook(String payload, String signature);
 }

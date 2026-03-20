@@ -6,6 +6,7 @@ import com.buildwithrani.backend.payment.dto.VerifyPaymentRequest;
 import com.buildwithrani.backend.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,5 +40,14 @@ public class PaymentController {
         );
 
         return ApiResponse.success("Payment verified successfully");
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<Void> handleRazorpayWebhook(
+            @RequestBody String payload,
+            @RequestHeader("X-Razorpay-Signature") String signature
+    ) {
+        paymentService.processWebhook(payload, signature);
+        return ResponseEntity.ok().build();
     }
 }

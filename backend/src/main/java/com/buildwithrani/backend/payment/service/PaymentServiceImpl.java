@@ -9,6 +9,8 @@ import com.buildwithrani.backend.order.repository.OrderRepository;
 import com.buildwithrani.backend.payment.gateway.PaymentGateway;
 import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.repository.ProductRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentGateway paymentGateway;
     private final ProductRepository productRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public String createPayment(Long orderId) {
@@ -43,6 +46,23 @@ public class PaymentServiceImpl implements PaymentService {
         order.markPaymentCreated(razorpayOrderId);
 
         return razorpayOrderId;
+    }
+
+    @Override
+    public void processWebhook(String payload, String signature) {
+        if (!paymentGateway.verifyWebhookSignature(payload, signature)) {
+            throw new SecurityException("Invalid webhook signature");
+        }
+
+        String razorpayOrderId = parseOrderIdFromPayload(payload);
+
+        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getPaymentStatus() == PaymentStatus.SUCCESS) return;
+
+        // Common logic: Reduce stock then mark success
+        finalizeOrder(order, "WEBHOOK_RECOVERY", signature);
     }
 
     @Override
@@ -86,4 +106,24 @@ public class PaymentServiceImpl implements PaymentService {
 
         //  Then mark payment success
         order.markPaymentSuccess(razorpayPaymentId, signature);
-    }}
+    }
+
+    private void finalizeOrder(Order order, String paymentId, String signature) {
+        // Reduce stock
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+            product.reduceStock(item.getQuantity());
+        }
+        // Mark success
+        order.markPaymentSuccess(paymentId, signature);
+    }
+
+    private String parseOrderIdFromPayload(String payload) {
+        try {
+            return objectMapper.readTree(payload).at("/payload/payment/entity/order_id").asText();
+        } catch (Exception e) {
+            throw new RuntimeException("Json parsing failed", e);
+        }
+    }
+}

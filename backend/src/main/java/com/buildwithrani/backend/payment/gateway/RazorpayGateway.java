@@ -17,6 +17,9 @@ public class RazorpayGateway implements PaymentGateway {
     @Value("${razorpay.secret}")
     private String razorpaySecret;
 
+    @Value("${razorpay.webhook.secret:default_secret}")
+    private String webhookSecret;
+
     public RazorpayGateway(RazorpayClient razorpayClient) {
         this.razorpayClient = razorpayClient;
     }
@@ -38,6 +41,15 @@ public class RazorpayGateway implements PaymentGateway {
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to create Razorpay order", e);
+        }
+    }
+
+    @Override
+    public boolean verifyWebhookSignature(String payload, String signature) {
+        try {
+            return Utils.verifyWebhookSignature(payload, signature, webhookSecret);
+        } catch (Exception e) {
+            return false;
         }
     }
 

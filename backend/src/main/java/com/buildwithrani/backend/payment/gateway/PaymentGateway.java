@@ -11,4 +11,5 @@ public interface PaymentGateway {
             String razorpayPaymentId,
             String signature
     );
+    boolean verifyWebhookSignature(String payload, String signature);
 }
