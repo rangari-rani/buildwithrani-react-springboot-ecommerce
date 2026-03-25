@@ -29,11 +29,6 @@ class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
-
-    // ======================
-    // SIGNUP
-    // ======================
-
     @Test
     void shouldSignupSuccessfullyWithDefaultRole() {
 
@@ -81,10 +76,6 @@ class AuthServiceTest {
                 user.getRole() == Role.ADMIN
         ));
     }
-
-    // ======================
-    // LOGIN
-    // ======================
 
     @Test
     void shouldLoginSuccessfully() {
@@ -147,10 +138,6 @@ class AuthServiceTest {
         assertThrows(RuntimeException.class,
                 () -> authService.login(request));
     }
-
-    // ======================
-    // LOGOUT
-    // ======================
 
     @Test
     void shouldLogoutAndIncrementTokenVersion() {
