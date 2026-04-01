@@ -37,7 +37,7 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 - Dockerized full stack (React + Spring Boot + MySQL)
 - Automatically seeded demo data (users, products, orders)
 - Clean REST API design ready for OpenAPI / Swagger integration
-- Comprehensive unit testing with JUnit + Mockito (75% overall coverage)
+- Comprehensive unit testing with JUnit + Mockito (144+ test cases, 72% overall coverage)
   
 ---
 
