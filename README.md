@@ -68,7 +68,7 @@ A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, 
 
 ---
 
-## 🐳 Quick Start (Recommended)
+##  Quick Start (Recommended)
 
 Run the entire stack with one command:
 
@@ -90,7 +90,7 @@ docker compose up --build
 
 ---
 
-## 🔐 Demo Credentials
+##  Demo Credentials
 
 ```bash
 ADMIN  
@@ -102,7 +102,7 @@ email: user@demo.com
 password: Password123!
 ```
 
-## 🏛 Architecture Highlights
+##  Architecture Highlights
 
 - Stateless REST APIs
 - Domain-enforced lifecycle invariants
@@ -112,7 +112,7 @@ password: Password123!
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ![Audit](https://github.com/rangari-rani/buildwithrani-react-springboot-ecommerce/blob/25f9dedd42809e989f8d3c79c6d73c204c06cd31/frontend/public/audit.png)
 
