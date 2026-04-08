@@ -11,6 +11,7 @@ import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.mapper.ProductMapper;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,6 +160,7 @@ public class ProductServiceImpl implements ProductService {
 
     // -------- USER / READ ONLY --------
 
+    @Cacheable(value = "products")
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
