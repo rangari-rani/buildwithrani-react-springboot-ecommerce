@@ -4,7 +4,7 @@
 ### Domain-Driven E-Commerce System  
 **Built by Rani Rangari**
 
-A full-stack, Dockerized ecommerce platform built with **Spring Boot + React**, showcasing explicit order lifecycles, role-based security, transactional integrity, and audit logging.
+A full-stack, Dockerized ecommerce platform built with **Spring Boot, React, MySQL**, showcasing explicit order lifecycles, role-based security, transactional integrity, and audit logging.
 
 <br/>
 
