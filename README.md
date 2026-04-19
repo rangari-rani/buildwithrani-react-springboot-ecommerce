@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛒 Wellness Cart  
+# Wellness Cart  
 ### Domain-Driven E-Commerce System  
 **Built by Rani Rangari**
 
