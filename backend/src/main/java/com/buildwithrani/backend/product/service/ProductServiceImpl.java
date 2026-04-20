@@ -151,11 +151,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void decreaseStock(Long productId, int quantity) {
+        int rowsUpdated = productRepository.decreaseStockAtomic(productId, quantity);
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        product.reduceStock(quantity);
+        if (rowsUpdated == 0) {
+            throw new InvalidStateException("Sorry, this item just sold out or has insufficient stock.");
+        }
     }
 
     // -------- USER / READ ONLY --------

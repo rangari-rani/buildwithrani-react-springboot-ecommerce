@@ -60,19 +60,21 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItems = new ArrayList<>();
 
         for (CartItem cartItem : cart.getItems()) {
+            Long productId = cartItem.getProduct().getId();
+            int quantity = cartItem.getQuantity();
 
-            Product product = productRepository.findById(cartItem.getProduct().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+            int rowsUpdated = productRepository.decreaseStockAtomic(productId, quantity);
 
-            if (product.getStatus() != ProductStatus.ACTIVE) {
-                throw new InvalidStateException("Product is not available for purchase");
+            if (rowsUpdated == 0) {
+                throw new InvalidStateException("Item '" + cartItem.getProduct().getName() +
+                        "' is unavailable or has insufficient stock.");
             }
 
-            int quantity = cartItem.getQuantity();
-            product.reduceStock(quantity);
-            BigDecimal itemTotal = product.getPrice()
-                    .multiply(BigDecimal.valueOf(quantity));
 
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
             totalAmount = totalAmount.add(itemTotal);
 
             OrderItem orderItem = OrderItem.builder()
@@ -102,17 +104,27 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse cancelOrder(Long orderId, String email) {
         User user = getUserByEmail(email);
+
+        // 1. Fetch the order with its items
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
+        // 2. Security Check
         if (!order.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("You are not allowed to access this order");
         }
 
+        // 3. Update Order Status
         OrderStatus previousStatus = order.getOrderStatus();
         order.cancelByUser();
 
-        // Professional logging: Keep action clean, put details in metadata
+        // 4. ATOMIC STOCK RETURN
+        // We loop through the items that were in the order and put them back on the shelf
+        for (OrderItem item : order.getOrderItems()) {
+            productRepository.increaseStockAtomic(item.getProductId(), item.getQuantity());
+        }
+
+        // 5. Professional logging
         String metadata = String.format("{\"from_status\":\"%s\", \"to_status\":\"CANCELLED\"}", previousStatus);
 
         auditService.logAction(
@@ -121,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
                 "ORDER_CANCELLED",
                 "ORDER",
                 order.getId(),
-                metadata // 6th argument added
+                metadata
         );
 
         return OrderMapper.toOrderResponse(order);
