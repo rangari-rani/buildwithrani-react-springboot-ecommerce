@@ -11,6 +11,8 @@ import com.buildwithrani.backend.product.entity.Product;
 import com.buildwithrani.backend.product.mapper.ProductMapper;
 import com.buildwithrani.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,25 +24,49 @@ import com.buildwithrani.backend.auth.repository.UserRepository;
 import com.buildwithrani.backend.auth.security.SecurityUtils;
 
 import java.util.List;
-
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ProductServiceImpl implements ProductService {
-
+    private final RedissonClient redissonClient;
     private final ProductRepository productRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
     private final AuditService auditService;
     private final UserRepository userRepository;
 
+    @Override
+    public void updateStockWithRedisLock(Long productId, int quantity) {
+        String lockKey = "product-stock-lock-" + productId;
+        RLock lock = redissonClient.getLock(lockKey);
+
+        try {
+            if (lock.tryLock(10, 2, TimeUnit.SECONDS)) {
+                try {
+                    Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+                    if (product.getStock() >= quantity) {
+                        product.reduceStock(quantity);
+                        productRepository.save(product);
+                    }
+                } finally {
+                    if (lock.isHeldByCurrentThread()) {
+                        lock.unlock();
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
     // -------- ADMIN --------
 
     @Override
     @Audit(action = "PRODUCT_CREATED", entityType = "PRODUCT")
     public ProductResponseDTO createProduct(ProductRequestDTO request, MultipartFile image) {
-
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
             imageUrl = cloudinaryService.uploadImage(image);
@@ -57,16 +83,13 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         product.applyDiscount(request.getDiscountPercentage());
-
         productRepository.save(product);
-
         return productMapper.toResponse(product);
     }
 
     @Override
     @Audit(action = "PRODUCT_UPDATED", entityType = "PRODUCT")
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO request, MultipartFile image) {
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -75,7 +98,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         String finalImageUrl = product.getImageUrl();
-
         if (image != null && !image.isEmpty()) {
             finalImageUrl = cloudinaryService.uploadImage(image);
         }
@@ -88,13 +110,12 @@ public class ProductServiceImpl implements ProductService {
                 Boolean.TRUE.equals(request.getFeatured()),
                 finalImageUrl
         );
-
+        productRepository.save(product); // Explicit save for clarity
         return productMapper.toResponse(product);
     }
 
     @Override
     public void updateProductStatus(Long productId, ProductStatus status) {
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -127,7 +148,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Audit(action = "PRODUCT_FEATURED_TOGGLE", entityType = "PRODUCT")
     public void updateFeaturedStatus(Long productId, boolean featured) {
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -142,17 +162,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void increaseStock(Long productId, int quantity) {
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
         product.increaseStock(quantity);
     }
 
     @Override
     public void decreaseStock(Long productId, int quantity) {
         int rowsUpdated = productRepository.decreaseStockAtomic(productId, quantity);
-
         if (rowsUpdated == 0) {
             throw new InvalidStateException("Sorry, this item just sold out or has insufficient stock.");
         }

@@ -23,6 +23,8 @@ public interface ProductService {
 
     void decreaseStock(Long productId, int quantity);
 
+    void updateStockWithRedisLock(Long productId, int quantity);
+
     // -------- USER --------
     List<ProductResponseDTO> getAllProducts();
 
